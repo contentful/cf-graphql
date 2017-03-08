@@ -1,0 +1,23 @@
+{
+  "name": "cf-graphql",
+  "version": "0.0.1",
+  "scripts": {
+    "get-cts": "node get-cts.js",
+    "start": "nodemon index.js",
+    "lint": "eslint '*.js'"
+  },
+  "private": true,
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.15.2",
+    "express-graphql": "^0.6.3",
+    "graphql": "^0.9.1",
+    "lodash": "^4.17.4",
+    "node-fetch": "^1.6.3",
+    "pluralize": "^4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.17.1",
+    "nodemon": "^1.11.0"
+  }
+}
