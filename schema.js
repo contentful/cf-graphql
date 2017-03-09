@@ -1,19 +1,21 @@
 'use strict';
 
-const {
-  GraphQLSchema,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLID,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLInt
-} = require('graphql');
+const graphql = require('graphql');
+const GraphQLSchema = graphql.GraphQLSchema;
+const GraphQLNonNull = graphql.GraphQLNonNull;
+const GraphQLObjectType = graphql.GraphQLObjectType;
+const GraphQLList = graphql.GraphQLList;
+const GraphQLID = graphql.GraphQLID;
+const GraphQLString = graphql.GraphQLString;
+const GraphQLBoolean = graphql.GraphQLBoolean;
+const GraphQLInt = graphql.GraphQLInt;
 
-const {getEntry, getEntries} = require('./client.js');
+const client = require('./client.js');
+const getEntry = client.getEntry;
+const getEntries = client.getEntries;
 
-const {upperFirst, camelCase} = require('lodash');
+const upperFirst = require('lodash.upperfirst');
+const camelCase = require('lodash.camelcase');
 const pluralize = require('pluralize');
 
 const CF_TO_GRAPHQL_TYPE = {
@@ -54,9 +56,9 @@ function queryFields (cts) {
     acc[name] = {
       type: Type,
       args: {
-        id: {type: new GraphQLNonNull(GraphQLString)}
+        id: {type: new GraphQLNonNull(GraphQLID)}
       },
-      resolve: (_, {id}) => getEntry(id, ct.sys.id)
+      resolve: (_, args) => getEntry(args.id, ct.sys.id)
     };
 
     acc[pluralize(name)] = {
@@ -94,7 +96,7 @@ function singularField (cfField, ctIdToType) {
 }
 
 function arrayField (cfField, ctIdToType) {
-  const {items = {}} = cfField;
+  const items = cfField.items || {};
   if (items.type === 'Symbol') {
     return arrayOfStrings(cfField);
   } else if (items.type === 'Link' && items.linkType === 'Entry') {
@@ -102,39 +104,43 @@ function arrayField (cfField, ctIdToType) {
   }
 }
 
-function hasScalarMapping ({type}) {
-  return Object.keys(CF_TO_GRAPHQL_TYPE).includes(type);
+function hasScalarMapping (cfField) {
+  return Object.keys(CF_TO_GRAPHQL_TYPE).indexOf(cfField.type) > -1;
 }
 
-function scalar ({type, id}) {
+function scalar (cfField) {
   return {
-    type: CF_TO_GRAPHQL_TYPE[type],
-    resolve: e => e.fields && e.fields[id]
+    type: CF_TO_GRAPHQL_TYPE[cfField.type],
+    resolve: e => e.fields && e.fields[cfField.id]
   };
 }
 
-function arrayOfStrings ({id}) {
+function arrayOfStrings (cfField) {
   return {
     type: new GraphQLList(GraphQLString),
-    resolve: e => e.fields && e.fields[id]
+    resolve: e => e.fields && e.fields[cfField.id]
   };
 }
 
-function arrayOfRefs ({id, items = {}}, ctIdToType) {
+function arrayOfRefs (cfField, ctIdToType) {
+  const items = cfField.items || {};
   const linkedCt = findLinkedCt(items.validations);
+
   if (linkedCt) {
     return {
       type: new GraphQLList(ctIdToType[linkedCt]),
       resolve: e => (
         // TODO: boo! should not map with `getEntry`
-        e.fields && e.fields[id].map(l => getEntry(l.sys.id, linkedCt))
+        e.fields && e.fields[cfField.id].map(l => getEntry(l.sys.id, linkedCt))
       )
     };
   }
 }
 
-function ref ({id, validations}, ctIdToType) {
-  const linkedCt = findLinkedCt(validations);
+function ref (cfField, ctIdToType) {
+  const id = cfField.id;
+  const linkedCt = findLinkedCt(cfField.validations);
+
   if (linkedCt) {
     return {
       type: ctIdToType[linkedCt],
@@ -145,8 +151,8 @@ function ref ({id, validations}, ctIdToType) {
   }
 }
 
-function findLinkedCt (validations = []) {
-  const v = validations.find(v => (
+function findLinkedCt (validations) {
+  const v = (validations || []).find(v => (
     Array.isArray(v.linkContentType) && v.linkContentType.length === 1
   ));
 

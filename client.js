@@ -1,6 +1,9 @@
 'use strict';
 
-const {spaceId, cdaToken} = require('./config.json');
+const config = require('./config.json');
+const spaceId = config.spaceId;
+const cdaToken = config.cdaToken;
+
 const fetch = require('node-fetch');
 
 const BASE = `https://cdn.contentful.com/spaces/${spaceId}`;
@@ -37,7 +40,7 @@ function getMany (url) {
   return fetch(url)
   .then(checkStatus)
   .then(res => res.json())
-  .then(({items}) => items);
+  .then(res => res.items);
 }
 
 function checkStatus (res) {

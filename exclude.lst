@@ -1,0 +1,11 @@
+*.git*
+
+package.json
+exclude.lst
+get-cts.js
+index.js
+
+node_modules/express/*
+node_modules/express-graphql/*
+node_modules/eslint/*
+node_modules/nodemon/*
