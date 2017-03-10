@@ -32,10 +32,10 @@ Handlers:
 
 ## Known issues
 
-- [ ] Not all Contentful field types are mapped properly (especially Asset links)
-- [ ] Firing waaay too many requests, not making use of includes, no caching
 - [ ] Name generation logic may cause conflicts, no checks implemented
 - [ ] GraphiQL uses externally hosted scripts only and does not polyfill anything - tested only in FF52 and Ch56
+- [x] Not all Contentful field types are mapped properly (especially Asset links)
+- [x] Firing waaay too many requests, not making use of includes, no caching
 
 ## To migrate from the initial solution
 

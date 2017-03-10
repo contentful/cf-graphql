@@ -1,257 +1,107 @@
 [
   {
-    "sys": {
-      "space": {
-        "sys": {
-          "type": "Link",
-          "linkType": "Space",
-          "id": "f9gzm4p998uo"
-        }
-      },
-      "id": "5KMiN6YPvi42icqAUQMCQe",
-      "type": "ContentType",
-      "createdAt": "2017-03-08T14:15:16.111Z",
-      "updatedAt": "2017-03-08T14:15:16.111Z",
-      "revision": 1
-    },
-    "displayField": "title",
+    "id": "5KMiN6YPvi42icqAUQMCQe",
     "name": "Category",
-    "description": null,
     "fields": [
       {
         "id": "title",
-        "name": "Title",
-        "type": "Symbol",
-        "localized": false,
         "required": true,
-        "disabled": false,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "shortDescription",
-        "name": "Short description",
-        "type": "Text",
-        "localized": false,
         "required": false,
-        "disabled": true,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "icon",
-        "name": "Icon",
-        "type": "Link",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false,
-        "linkType": "Asset"
+        "type": "Link<Asset>"
       }
     ]
   },
   {
-    "sys": {
-      "space": {
-        "sys": {
-          "type": "Link",
-          "linkType": "Space",
-          "id": "f9gzm4p998uo"
-        }
-      },
-      "id": "2wKn6yEnZewu2SCCkus4as",
-      "type": "ContentType",
-      "createdAt": "2017-03-08T14:15:16.081Z",
-      "updatedAt": "2017-03-08T14:15:16.081Z",
-      "revision": 1
-    },
-    "displayField": "title",
+    "id": "2wKn6yEnZewu2SCCkus4as",
     "name": "Post",
-    "description": null,
     "fields": [
       {
         "id": "title",
-        "name": "Title",
-        "type": "Text",
-        "localized": false,
         "required": true,
-        "disabled": false,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "slug",
-        "name": "Slug",
-        "type": "Symbol",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "author",
-        "name": "Author",
-        "type": "Array",
-        "localized": false,
         "required": true,
-        "disabled": false,
-        "omitted": false,
-        "items": {
-          "type": "Link",
-          "validations": [
-            {
-              "linkContentType": [
-                "1kUEViTN4EmGiEaaeC6ouY"
-              ]
-            }
-          ],
-          "linkType": "Entry"
-        }
+        "type": "Array<Link<Entry>>",
+        "linkedCt": "1kUEViTN4EmGiEaaeC6ouY"
       },
       {
         "id": "body",
-        "name": "Body",
-        "type": "Text",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "category",
-        "name": "Category",
-        "type": "Array",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false,
-        "items": {
-          "type": "Link",
-          "validations": [
-            {
-              "linkContentType": [
-                "5KMiN6YPvi42icqAUQMCQe"
-              ]
-            }
-          ],
-          "linkType": "Entry"
-        }
+        "type": "Array<Link<Entry>>",
+        "linkedCt": "5KMiN6YPvi42icqAUQMCQe"
       },
       {
         "id": "tags",
-        "name": "Tags",
-        "type": "Array",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false,
-        "items": {
-          "type": "Symbol",
-          "validations": []
-        }
+        "type": "Array<Symbol>"
       },
       {
         "id": "featuredImage",
-        "name": "Featured image",
-        "type": "Link",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false,
-        "linkType": "Asset"
+        "type": "Link<Asset>"
       },
       {
         "id": "date",
-        "name": "Date",
-        "type": "Date",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "comments",
-        "name": "Comments",
-        "type": "Boolean",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false
+        "type": "Bool"
       }
     ]
   },
   {
-    "sys": {
-      "space": {
-        "sys": {
-          "type": "Link",
-          "linkType": "Space",
-          "id": "f9gzm4p998uo"
-        }
-      },
-      "id": "1kUEViTN4EmGiEaaeC6ouY",
-      "type": "ContentType",
-      "createdAt": "2017-03-08T14:15:16.053Z",
-      "updatedAt": "2017-03-08T14:15:16.053Z",
-      "revision": 1
-    },
-    "displayField": "name",
+    "id": "1kUEViTN4EmGiEaaeC6ouY",
     "name": "Author",
-    "description": null,
     "fields": [
       {
         "id": "name",
-        "name": "Name",
-        "type": "Symbol",
-        "localized": false,
         "required": true,
-        "disabled": false,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "website",
-        "name": "Website",
-        "type": "Symbol",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "profilePhoto",
-        "name": "Profile Photo",
-        "type": "Link",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false,
-        "linkType": "Asset"
+        "type": "Link<Asset>"
       },
       {
         "id": "biography",
-        "name": "Biography",
-        "type": "Text",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false
+        "type": "String"
       },
       {
         "id": "createdEntries",
-        "name": "Created Entries",
-        "type": "Array",
-        "localized": false,
         "required": false,
-        "disabled": false,
-        "omitted": false,
-        "items": {
-          "type": "Link",
-          "validations": [
-            {
-              "linkContentType": [
-                "2wKn6yEnZewu2SCCkus4as"
-              ]
-            }
-          ],
-          "linkType": "Entry"
-        }
+        "type": "Array<Link<Entry>>",
+        "linkedCt": "2wKn6yEnZewu2SCCkus4as"
       }
     ]
   }

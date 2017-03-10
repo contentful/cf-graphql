@@ -1,30 +1,19 @@
 'use strict';
 
 const graphql = require('graphql');
+const _get = require('lodash.get');
+const upperFirst = require('lodash.upperfirst');
+const camelCase = require('lodash.camelcase');
+const pluralize = require('pluralize');
+
 const GraphQLSchema = graphql.GraphQLSchema;
 const GraphQLNonNull = graphql.GraphQLNonNull;
 const GraphQLObjectType = graphql.GraphQLObjectType;
 const GraphQLList = graphql.GraphQLList;
 const GraphQLID = graphql.GraphQLID;
 const GraphQLString = graphql.GraphQLString;
-const GraphQLBoolean = graphql.GraphQLBoolean;
-const GraphQLInt = graphql.GraphQLInt;
 
-const _get = require('lodash.get');
-
-const upperFirst = require('lodash.upperfirst');
-const camelCase = require('lodash.camelcase');
-const pluralize = require('pluralize');
-
-const CF_TO_GRAPHQL_TYPE = {
-  Symbol: GraphQLString,
-  Text: GraphQLString,
-  Date: GraphQLString,
-  Boolean: GraphQLBoolean,
-  Number: GraphQLInt
-};
-
-const QueryType = new GraphQLObjectType({
+const QueryType = new graphql.GraphQLObjectType({
   name: 'Query',
   fields: queryFields(require('./cts.json'))
 });
@@ -38,7 +27,83 @@ const SysType = new GraphQLObjectType({
   }
 });
 
+const LinkType = new GraphQLObjectType({
+  name: 'Link',
+  fields: {
+    type: {type: new GraphQLNonNull(GraphQLString)},
+    id: {type: new GraphQLNonNull(GraphQLID)}
+  }
+});
+
+const TYPE_TO_FIELD = {
+  String: produceSimpleFieldOf(GraphQLString),
+  Int: produceSimpleFieldOf(graphql.GraphQLInt),
+  Bool: produceSimpleFieldOf(graphql.GraphQLBoolean),
+  Object: objectField,
+  'Link<Entry>': refField,
+  'Link<Asset>': refField,
+  'Array<Symbol>': produceSimpleFieldOf(new GraphQLList(GraphQLString)),
+  'Array<Link<Entry>>': arrayOfRefsField,
+  'Array<Link<Asset>>': arrayOfRefsField
+};
+
 module.exports = new GraphQLSchema({query: QueryType});
+
+function produceSimpleFieldOf (Type) {
+  return field => ({
+    type: maybeRequired(field, Type),
+    resolve: entry => _get(entry, ['fields', field.id])
+  });
+}
+
+function objectField (field) {
+  return {
+    type: maybeRequired(field, GraphQLString),
+    resolve: entry => {
+      const uniqueSomething = {};
+      const value = _get(entry, ['fields', field.id], uniqueSomething);
+      return value !== uniqueSomething ? JSON.stringify(value) : undefined;
+    }
+  };
+}
+
+function refField (field, ctIdToType) {
+  const linkedCt = field.linkedCt;
+  const Type = linkedCt ? ctIdToType[linkedCt] : LinkType;
+
+  return {
+    type: maybeRequired(field, Type),
+    resolve: (entry, _, ctx) => {
+      const link = _get(entry, ['fields', field.id]);
+      if (link && linkedCt) {
+        return ctx.entryLoader.get(link.sys.id, linkedCt);
+      } else if (link) {
+        return {type: link.sys.linkType, id: link.sys.id};
+      }
+    }
+  };
+}
+
+function arrayOfRefsField (field, ctIdToType) {
+  const linkedCt = field.linkedCt;
+  const Type = new GraphQLList(linkedCt ? ctIdToType[linkedCt] : LinkType);
+
+  return {
+    type: maybeRequired(field, Type),
+    resolve: (entry, _, ctx) => {
+      const links = _get(entry, ['fields', field.id]);
+      if (links && linkedCt) {
+        return ctx.entryLoader.getMany(links.map(l => l.sys.id));
+      } else if (links) {
+        return links.map(l => ({type: l.sys.linkType, id: l.sys.id}));
+      }
+    }
+  };
+}
+
+function maybeRequired (field, Type) {
+  return field.required ? new GraphQLNonNull(Type) : Type;
+}
 
 function queryFields (cts) {
   const ctIdToType = {};
@@ -46,9 +111,14 @@ function queryFields (cts) {
   return cts.reduce((acc, ct) => {
     const name = camelCase(ct.name);
 
-    const Type = ctIdToType[ct.sys.id] = new GraphQLObjectType({
+    const Type = ctIdToType[ct.id] = new GraphQLObjectType({
       name: upperFirst(name),
-      fields: () => ctFields(ct, ctIdToType)
+      fields: () => {
+        return ct.fields.reduce((acc, f) => {
+          acc[f.id] = TYPE_TO_FIELD[f.type](f, ctIdToType);
+          return acc;
+        }, {sys: {type: new GraphQLNonNull(SysType)}});
+      }
     });
 
     acc[name] = {
@@ -56,103 +126,14 @@ function queryFields (cts) {
       args: {
         id: {type: new GraphQLNonNull(GraphQLID)}
       },
-      resolve: (_, args, ctx) => ctx.entryLoader.get(args.id, ct.sys.id)
+      resolve: (_, args, ctx) => ctx.entryLoader.get(args.id, ct.id)
     };
 
     acc[pluralize(name)] = {
       type: new GraphQLList(Type),
-      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.sys.id)
+      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id)
     };
 
     return acc;
   }, {});
-}
-
-function ctFields (ct, ctIdToType) {
-  const fields = {sys: {type: new GraphQLNonNull(SysType)}};
-
-  return ct.fields.reduce((acc, cfField) => {
-    if (!cfField.omitted && cfField.id !== 'sys') {
-      const fn = cfField.type === 'Array' ? arrayField : singularField;
-      const field = fn(cfField, ctIdToType);
-
-      if (field) {
-        acc[cfField.id] = field;
-      }
-    }
-
-    return acc;
-  }, fields);
-}
-
-function singularField (cfField, ctIdToType) {
-  if (hasScalarMapping(cfField)) {
-    return scalar(cfField);
-  } else if (cfField.type === 'Link' && cfField.linkType === 'Entry') {
-    return ref(cfField, ctIdToType);
-  }
-}
-
-function arrayField (cfField, ctIdToType) {
-  const items = cfField.items || {};
-  if (items.type === 'Symbol') {
-    return arrayOfStrings(cfField);
-  } else if (items.type === 'Link' && items.linkType === 'Entry') {
-    return arrayOfRefs(cfField, ctIdToType);
-  }
-}
-
-function hasScalarMapping (cfField) {
-  return Object.keys(CF_TO_GRAPHQL_TYPE).indexOf(cfField.type) > -1;
-}
-
-function scalar (cfField) {
-  return {
-    type: CF_TO_GRAPHQL_TYPE[cfField.type],
-    resolve: entry => _get(entry, ['fields', cfField.id])
-  };
-}
-
-function arrayOfStrings (cfField) {
-  return {
-    type: new GraphQLList(GraphQLString),
-    resolve: entry => _get(entry, ['fields', cfField.id])
-  };
-}
-
-function arrayOfRefs (cfField, ctIdToType) {
-  const items = cfField.items || {};
-  const linkedCt = findLinkedCt(items.validations);
-
-  if (linkedCt) {
-    return {
-      type: new GraphQLList(ctIdToType[linkedCt]),
-      resolve: (entry, _, ctx) => {
-        const links = _get(entry, ['fields', cfField.id], []);
-        return ctx.entryLoader.getMany(links.map(l => l.sys.id));
-      }
-    };
-  }
-}
-
-function ref (cfField, ctIdToType) {
-  const linkedCt = findLinkedCt(cfField.validations);
-
-  if (linkedCt) {
-    return {
-      type: ctIdToType[linkedCt],
-      resolve: (entry, _, ctx) => {
-        const link = _get(entry, ['fields', cfField.id]);
-        return link && ctx.entryLoader.get(link.sys.id, linkedCt);
-      }
-    };
-  }
-}
-
-function findLinkedCt (validations) {
-  const v = (validations || []).find(v => (
-    Array.isArray(v.linkContentType) && v.linkContentType.length === 1
-  ));
-
-  return v && v.linkContentType[0];
 }
