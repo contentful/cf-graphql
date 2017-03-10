@@ -10,9 +10,7 @@ const GraphQLString = graphql.GraphQLString;
 const GraphQLBoolean = graphql.GraphQLBoolean;
 const GraphQLInt = graphql.GraphQLInt;
 
-const client = require('./client.js');
-const getEntry = client.getEntry;
-const getEntries = client.getEntries;
+const _get = require('lodash.get');
 
 const upperFirst = require('lodash.upperfirst');
 const camelCase = require('lodash.camelcase');
@@ -58,12 +56,12 @@ function queryFields (cts) {
       args: {
         id: {type: new GraphQLNonNull(GraphQLID)}
       },
-      resolve: (_, args) => getEntry(args.id, ct.sys.id)
+      resolve: (_, args, ctx) => ctx.entryLoader.get(args.id, ct.sys.id)
     };
 
     acc[pluralize(name)] = {
       type: new GraphQLList(Type),
-      resolve: () => getEntries(ct.sys.id)
+      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.sys.id)
     };
 
     return acc;
@@ -111,14 +109,14 @@ function hasScalarMapping (cfField) {
 function scalar (cfField) {
   return {
     type: CF_TO_GRAPHQL_TYPE[cfField.type],
-    resolve: e => e.fields && e.fields[cfField.id]
+    resolve: entry => _get(entry, ['fields', cfField.id])
   };
 }
 
 function arrayOfStrings (cfField) {
   return {
     type: new GraphQLList(GraphQLString),
-    resolve: e => e.fields && e.fields[cfField.id]
+    resolve: entry => _get(entry, ['fields', cfField.id])
   };
 }
 
@@ -129,24 +127,24 @@ function arrayOfRefs (cfField, ctIdToType) {
   if (linkedCt) {
     return {
       type: new GraphQLList(ctIdToType[linkedCt]),
-      resolve: e => (
-        // TODO: boo! should not map with `getEntry`
-        e.fields && e.fields[cfField.id].map(l => getEntry(l.sys.id, linkedCt))
-      )
+      resolve: (entry, _, ctx) => {
+        const links = _get(entry, ['fields', cfField.id], []);
+        return ctx.entryLoader.getMany(links.map(l => l.sys.id));
+      }
     };
   }
 }
 
 function ref (cfField, ctIdToType) {
-  const id = cfField.id;
   const linkedCt = findLinkedCt(cfField.validations);
 
   if (linkedCt) {
     return {
       type: ctIdToType[linkedCt],
-      resolve: e => (
-        e.fields && e.fields[id] && getEntry(e.fields[id].sys.id, linkedCt)
-      )
+      resolve: (entry, _, ctx) => {
+        const link = _get(entry, ['fields', cfField.id]);
+        return link && ctx.entryLoader.get(link.sys.id, linkedCt);
+      }
     };
   }
 }

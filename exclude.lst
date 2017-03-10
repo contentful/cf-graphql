@@ -1,9 +1,12 @@
 *.git*
 
-package.json
+.eslintrc.json
+.nvmrc
 exclude.lst
 get-cts.js
 index.js
+package.json
+README.md
 
 node_modules/express/*
 node_modules/express-graphql/*

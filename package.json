@@ -5,16 +5,18 @@
     "get-cts": "node get-cts.js",
     "start": "nodemon index.js",
     "lint": "eslint '*.js'",
-    "zip": "rm lambda-cf-graphql.zip && zip -9 -r lambda-cf-graphql.zip . -x@exclude.lst"
+    "zip": "rm -f lambda-cf-graphql.zip && zip -9 -r lambda-cf-graphql.zip . -x@exclude.lst"
   },
   "private": true,
   "license": "UNLICENSED",
   "dependencies": {
+    "dataloader": "^1.3.0",
     "express": "^4.15.2",
     "express-graphql": "^0.6.3",
     "graphql": "^0.9.1",
     "graphql-server-lambda": "^0.6.0",
     "lodash.camelcase": "^4.3.0",
+    "lodash.get": "^4.4.2",
     "lodash.upperfirst": "^4.3.1",
     "node-fetch": "^1.6.3",
     "pluralize": "^4.0.0"
