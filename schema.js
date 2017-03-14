@@ -6,49 +6,14 @@ const upperFirst = require('lodash.upperfirst');
 const camelCase = require('lodash.camelcase');
 const pluralize = require('pluralize');
 
-const GraphQLSchema = graphql.GraphQLSchema;
-const GraphQLNonNull = graphql.GraphQLNonNull;
 const GraphQLObjectType = graphql.GraphQLObjectType;
 const GraphQLList = graphql.GraphQLList;
-const GraphQLID = graphql.GraphQLID;
 const GraphQLString = graphql.GraphQLString;
 
-const UNIQUE_NOTHING = {};
-
-const IDType = new GraphQLNonNull(GraphQLID);
-const NonNullStringType = new GraphQLNonNull(GraphQLString);
-
-const QueryType = new graphql.GraphQLObjectType({
-  name: 'Query',
-  fields: queryFields(require('./cts.json'))
-});
-
-const SysType = new GraphQLNonNull(new GraphQLObjectType({
-  name: 'Sys',
-  fields: {
-    id: {type: IDType},
-    createdAt: {type: NonNullStringType},
-    updatedAt: {type: NonNullStringType}
-  }
-}));
-
-const LinkType = new GraphQLObjectType({
-  name: 'Link',
-  fields: {
-    type: {type: NonNullStringType},
-    id: {type: IDType}
-  }
-});
-
-const AssetType = new GraphQLObjectType({
-  name: 'Asset',
-  fields: {
-    sys: {type: SysType},
-    title: {type: IDType},
-    description: {type: GraphQLString},
-    url: {type: GraphQLString}
-  }
-});
+const baseTypes = require('./base-types.js');
+const EntrySysType = baseTypes.EntrySysType;
+const AssetType = baseTypes.AssetType;
+const EntryType = baseTypes.EntryType;
 
 const CF_TYPE_TO_FIELD_CONFIG = {
   String: field => createCfFieldConfig(GraphQLString, field),
@@ -62,28 +27,28 @@ const CF_TYPE_TO_FIELD_CONFIG = {
   'Array<Link<Entry>>': createCfEntryArrayFieldConfig
 };
 
-module.exports = new GraphQLSchema({query: QueryType});
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: queryFields(require('./cts.json'))
+});
+
+module.exports = new graphql.GraphQLSchema({query: QueryType});
 
 function createCfFieldConfig (Type, field, resolveFn) {
   return {
-    type: field.required ? new GraphQLNonNull(Type) : Type,
+    type: field.required ? new graphql.GraphQLNonNull(Type) : Type,
     resolve: (entity, _, ctx) => {
-      const fieldValue = _get(entity, ['fields', field.id], UNIQUE_NOTHING);
-      if (resolveFn) {
-        return resolveFn(fieldValue, ctx);
-      } else if (fieldValue !== UNIQUE_NOTHING) {
-        return fieldValue;
+      const uniqueNothing = {};
+      const fieldValue = _get(entity, ['fields', field.id], uniqueNothing);
+      if (fieldValue !== uniqueNothing) {
+        return resolveFn ? resolveFn(fieldValue, ctx) : fieldValue;
       }
     }
   };
 }
 
 function createCfObjectFieldConfig (field) {
-  return createCfFieldConfig(GraphQLString, field, value => {
-    if (value !== UNIQUE_NOTHING) {
-      return JSON.stringify(value);
-    }
-  });
+  return createCfFieldConfig(GraphQLString, field, val => JSON.stringify(val));
 }
 
 function createCfAssetFieldConfig (field) {
@@ -117,30 +82,24 @@ function prepareAsset (entity) {
   }
 }
 
-
 function createCfEntryFieldConfig (field, ctIdToType) {
   const linkedCt = field.linkedCt;
-  const Type = linkedCt ? ctIdToType[linkedCt] : LinkType;
+  const Type = linkedCt ? ctIdToType[linkedCt] : EntryType;
 
   return createCfFieldConfig(Type, field, (link, ctx) => {
-    if (link && linkedCt) {
-      return ctx.entryLoader.get(link.sys.id, linkedCt);
-    } else if (link) {
-      return {type: link.sys.linkType, id: link.sys.id};
-    }
+    return ctx.entryLoader.get(_get(link, ['sys', 'id']), linkedCt);
   });
 }
 
 function createCfEntryArrayFieldConfig (field, ctIdToType) {
   const linkedCt = field.linkedCt;
-  const Type = new GraphQLList(linkedCt ? ctIdToType[linkedCt] : LinkType);
+  const Type = new GraphQLList(linkedCt ? ctIdToType[linkedCt] : EntryType);
 
   return createCfFieldConfig(Type, field, (links, ctx) => {
-    if (links && linkedCt) {
-      return ctx.entryLoader.getMany(links.map(l => l.sys.id));
-    } else if (links) {
-      return links.map(l => ({type: l.sys.linkType, id: l.sys.id}));
-    }
+    const ids = links
+    .map(l => _get(l, ['sys', 'id']))
+    .filter(l => typeof l === 'string');
+    return ctx.entryLoader.getMany(ids);
   });
 }
 
@@ -150,19 +109,23 @@ function queryFields (cts) {
   return cts.reduce((acc, ct) => {
     const name = camelCase(ct.name);
 
+    const fieldsThunk = () => {
+      return ct.fields.reduce((acc, f) => {
+        acc[f.id] = CF_TYPE_TO_FIELD_CONFIG[f.type](f, ctIdToType);
+        return acc;
+      }, {sys: {type: EntrySysType}});
+    };
+
     const Type = ctIdToType[ct.id] = new GraphQLObjectType({
       name: upperFirst(name),
-      fields: () => {
-        return ct.fields.reduce((acc, f) => {
-          acc[f.id] = CF_TYPE_TO_FIELD_CONFIG[f.type](f, ctIdToType);
-          return acc;
-        }, {sys: {type: SysType}});
-      }
+      interfaces: [EntryType],
+      fields: fieldsThunk,
+      isTypeOf: entry => _get(entry, ['sys', 'contentType', 'sys', 'id']) === ct.id
     });
 
     acc[name] = {
       type: Type,
-      args: {id: {type: IDType}},
+      args: {id: {type: baseTypes.IDType}},
       resolve: (_, args, ctx) => ctx.entryLoader.get(args.id, ct.id)
     };
 
