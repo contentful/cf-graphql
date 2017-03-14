@@ -19,11 +19,13 @@ module.exports = {
 
 function createEntryLoader (log) {
   const loader = new DataLoader(load);
+  const assets = {};
 
   return {
     get: getOne,
     getMany: loader.loadMany.bind(loader),
-    query
+    query,
+    getIncludedAsset: id => assets[id]
   };
 
   function load (ids) {
@@ -62,6 +64,8 @@ function createEntryLoader (log) {
   function prime (res) {
     res.items.concat(_get(res, ['includes', 'Entry'], []))
     .forEach(e => loader.prime(e.sys.id, e));
+
+    _get(res, ['includes', 'Asset'], []).forEach(a => assets[a.sys.id] = a);
   }
 }
 

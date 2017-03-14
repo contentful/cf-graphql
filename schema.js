@@ -13,96 +13,135 @@ const GraphQLList = graphql.GraphQLList;
 const GraphQLID = graphql.GraphQLID;
 const GraphQLString = graphql.GraphQLString;
 
+const UNIQUE_NOTHING = {};
+
+const IDType = new GraphQLNonNull(GraphQLID);
+const NonNullStringType = new GraphQLNonNull(GraphQLString);
+
 const QueryType = new graphql.GraphQLObjectType({
   name: 'Query',
   fields: queryFields(require('./cts.json'))
 });
 
-const SysType = new GraphQLObjectType({
+const SysType = new GraphQLNonNull(new GraphQLObjectType({
   name: 'Sys',
   fields: {
-    id: {type: new GraphQLNonNull(GraphQLID)},
-    createdAt: {type: new GraphQLNonNull(GraphQLString)},
-    updatedAt: {type: new GraphQLNonNull(GraphQLString)}
+    id: {type: IDType},
+    createdAt: {type: NonNullStringType},
+    updatedAt: {type: NonNullStringType}
   }
-});
+}));
 
 const LinkType = new GraphQLObjectType({
   name: 'Link',
   fields: {
-    type: {type: new GraphQLNonNull(GraphQLString)},
-    id: {type: new GraphQLNonNull(GraphQLID)}
+    type: {type: NonNullStringType},
+    id: {type: IDType}
   }
 });
 
-const TYPE_TO_FIELD = {
-  String: produceSimpleFieldOf(GraphQLString),
-  Int: produceSimpleFieldOf(graphql.GraphQLInt),
-  Bool: produceSimpleFieldOf(graphql.GraphQLBoolean),
-  Object: objectField,
-  'Link<Entry>': refField,
-  'Link<Asset>': refField,
-  'Array<Symbol>': produceSimpleFieldOf(new GraphQLList(GraphQLString)),
-  'Array<Link<Entry>>': arrayOfRefsField,
-  'Array<Link<Asset>>': arrayOfRefsField
+const AssetType = new GraphQLObjectType({
+  name: 'Asset',
+  fields: {
+    sys: {type: SysType},
+    title: {type: IDType},
+    description: {type: GraphQLString},
+    url: {type: GraphQLString}
+  }
+});
+
+const CF_TYPE_TO_FIELD_CONFIG = {
+  String: field => createCfFieldConfig(GraphQLString, field),
+  Int: field => createCfFieldConfig(graphql.GraphQLInt, field),
+  Bool: field => createCfFieldConfig(graphql.GraphQLBoolean, field),
+  Object: createCfObjectFieldConfig,
+  'Link<Asset>': createCfAssetFieldConfig,
+  'Link<Entry>': createCfEntryFieldConfig,
+  'Array<Symbol>': field => createCfFieldConfig(new GraphQLList(GraphQLString), field),
+  'Array<Link<Asset>>': createCfAssetArrayFieldConfig,
+  'Array<Link<Entry>>': createCfEntryArrayFieldConfig
 };
 
 module.exports = new GraphQLSchema({query: QueryType});
 
-function produceSimpleFieldOf (Type) {
-  return field => ({
-    type: maybeRequired(field, Type),
-    resolve: entry => _get(entry, ['fields', field.id])
+function createCfFieldConfig (Type, field, resolveFn) {
+  return {
+    type: field.required ? new GraphQLNonNull(Type) : Type,
+    resolve: (entity, _, ctx) => {
+      const fieldValue = _get(entity, ['fields', field.id], UNIQUE_NOTHING);
+      if (resolveFn) {
+        return resolveFn(fieldValue, ctx);
+      } else if (fieldValue !== UNIQUE_NOTHING) {
+        return fieldValue;
+      }
+    }
+  };
+}
+
+function createCfObjectFieldConfig (field) {
+  return createCfFieldConfig(GraphQLString, field, value => {
+    if (value !== UNIQUE_NOTHING) {
+      return JSON.stringify(value);
+    }
   });
 }
 
-function objectField (field) {
-  return {
-    type: maybeRequired(field, GraphQLString),
-    resolve: entry => {
-      const uniqueSomething = {};
-      const value = _get(entry, ['fields', field.id], uniqueSomething);
-      return value !== uniqueSomething ? JSON.stringify(value) : undefined;
-    }
-  };
+function createCfAssetFieldConfig (field) {
+  return createCfFieldConfig(AssetType, field, (link, ctx) => {
+    return prepareAsset(getAsset(ctx, link));
+  });
 }
 
-function refField (field, ctIdToType) {
+function createCfAssetArrayFieldConfig (field) {
+  return createCfFieldConfig(new GraphQLList(AssetType), field, (links, ctx) => {
+    if (links) {
+      return links
+      .map(link => prepareAsset(getAsset(ctx, link)))
+      .filter(asset => typeof asset === 'object');
+    }
+  });
+}
+
+function getAsset (ctx, link) {
+  return ctx.entryLoader.getIncludedAsset(_get(link, ['sys', 'id']));
+}
+
+function prepareAsset (entity) {
+  if (entity) {
+    return {
+      sys: entity.sys,
+      title: _get(entity, ['fields', 'title']),
+      description: _get(entity, ['fields', 'description']),
+      url: _get(entity, ['fields', 'file', 'url'])
+    };
+  }
+}
+
+
+function createCfEntryFieldConfig (field, ctIdToType) {
   const linkedCt = field.linkedCt;
   const Type = linkedCt ? ctIdToType[linkedCt] : LinkType;
 
-  return {
-    type: maybeRequired(field, Type),
-    resolve: (entry, _, ctx) => {
-      const link = _get(entry, ['fields', field.id]);
-      if (link && linkedCt) {
-        return ctx.entryLoader.get(link.sys.id, linkedCt);
-      } else if (link) {
-        return {type: link.sys.linkType, id: link.sys.id};
-      }
+  return createCfFieldConfig(Type, field, (link, ctx) => {
+    if (link && linkedCt) {
+      return ctx.entryLoader.get(link.sys.id, linkedCt);
+    } else if (link) {
+      return {type: link.sys.linkType, id: link.sys.id};
     }
-  };
+  });
 }
 
-function arrayOfRefsField (field, ctIdToType) {
+function createCfEntryArrayFieldConfig (field, ctIdToType) {
   const linkedCt = field.linkedCt;
   const Type = new GraphQLList(linkedCt ? ctIdToType[linkedCt] : LinkType);
 
-  return {
-    type: maybeRequired(field, Type),
-    resolve: (entry, _, ctx) => {
-      const links = _get(entry, ['fields', field.id]);
-      if (links && linkedCt) {
-        return ctx.entryLoader.getMany(links.map(l => l.sys.id));
-      } else if (links) {
-        return links.map(l => ({type: l.sys.linkType, id: l.sys.id}));
-      }
+  return createCfFieldConfig(Type, field, (links, ctx) => {
+    if (links && linkedCt) {
+      return ctx.entryLoader.getMany(links.map(l => l.sys.id));
+    } else if (links) {
+      return links.map(l => ({type: l.sys.linkType, id: l.sys.id}));
     }
-  };
-}
-
-function maybeRequired (field, Type) {
-  return field.required ? new GraphQLNonNull(Type) : Type;
+  });
 }
 
 function queryFields (cts) {
@@ -115,17 +154,15 @@ function queryFields (cts) {
       name: upperFirst(name),
       fields: () => {
         return ct.fields.reduce((acc, f) => {
-          acc[f.id] = TYPE_TO_FIELD[f.type](f, ctIdToType);
+          acc[f.id] = CF_TYPE_TO_FIELD_CONFIG[f.type](f, ctIdToType);
           return acc;
-        }, {sys: {type: new GraphQLNonNull(SysType)}});
+        }, {sys: {type: SysType}});
       }
     });
 
     acc[name] = {
       type: Type,
-      args: {
-        id: {type: new GraphQLNonNull(GraphQLID)}
-      },
+      args: {id: {type: IDType}},
       resolve: (_, args, ctx) => ctx.entryLoader.get(args.id, ct.id)
     };
 
