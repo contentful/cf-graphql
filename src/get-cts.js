@@ -3,6 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 const _get = require('lodash.get');
+const upperFirst = require('lodash.upperfirst');
+const camelCase = require('lodash.camelcase');
+const pluralize = require('pluralize');
 
 const ENTITY_TYPES = [
   'Entry',
@@ -28,19 +31,33 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 };
 
 require('./client.js').getContentTypes().then(cts => {
+  cts = cleanCts(cts);
+  cts = addBackrefs(cts);
+
   fs.writeFile(
     path.resolve(__dirname, '..', 'cts.json'),
-    JSON.stringify(cleanCts(cts), null, 2)
+    JSON.stringify(cts, null, 2)
   );
 
-  console.log('Saved', cts.map(ct => ct.name).join(', '));
+  console.log('Saved', cts.map(ct => ct.names.type).join(', '));
+}, err => {
+  console.log(err);
+  process.exit(1);
 });
 
 function cleanCts (cts) {
   return cts.map(ct => {
+    const fieldName = camelCase(ct.name);
+    const typeName = upperFirst(fieldName);
+
     return {
       id: ct.sys.id,
-      name: ct.name,
+      names: {
+        field: fieldName,
+        collectionField: pluralize(fieldName),
+        type: typeName,
+        backrefsType: `${typeName}Backrefs`
+      },
       fields: ct.fields.reduce((acc, f) => {
         return f.omitted ? acc : acc.concat([field(f)]);
       }, [])
@@ -101,4 +118,25 @@ function linkedCt (f) {
   if (linkedCt) {
     return linkedCt;
   }
+}
+
+function addBackrefs (cts) {
+  const byId = cts.reduce((acc, ct) => {
+    acc[ct.id] = ct;
+    return acc;
+  }, {});
+
+  cts.forEach(ct => ct.fields.forEach(field => {
+    if (field.linkedCt) {
+      const linked = byId[field.linkedCt];
+      linked.backrefs = linked.backrefs || [];
+      linked.backrefs.push({
+        ctId: ct.id,
+        fieldId: field.id,
+        backrefFieldName: ct.names.collectionField + '__via__' + field.id
+      });
+    }
+  }));
+
+  return cts;
 }

@@ -20,6 +20,7 @@ module.exports = {
 function createEntryLoader (log) {
   const loader = new DataLoader(load);
   const assets = {};
+  const cachedPromises = {};
 
   return {
     get: getOne,
@@ -29,7 +30,7 @@ function createEntryLoader (log) {
   };
 
   function load (ids) {
-    return httpGet('/entries', {'sys.id[in]': ids.join(',')}, log)
+    return httpGet('/entries', {'sys.id[in]': ids.join(',')}, log, cachedPromises)
     .then(res => {
       prime(res);
 
@@ -53,8 +54,10 @@ function createEntryLoader (log) {
     });
   }
 
-  function query (ctId) {
-    return httpGet('/entries', {content_type: ctId}, log)
+  function query (ctId, q) {
+    const params = Object.assign({content_type: ctId}, q || {});
+
+    return httpGet('/entries', params, log, cachedPromises)
     .then(res => {
       prime(res);
       return res.items;
@@ -74,7 +77,7 @@ function getContentTypes () {
   .then(res => res.items);
 }
 
-function httpGet (url, params, log) {
+function httpGet (url, params, log, cachedPromises) {
   const headers = {Authorization: `Bearer ${cdaToken}`};
 
   params = qs.stringify(params || {});
@@ -82,16 +85,24 @@ function httpGet (url, params, log) {
     url = `${url}?${params}`;
   }
 
+  cachedPromises = cachedPromises || {};
+  const cached = cachedPromises[url];
+  if (cached) {
+    return cached;
+  }
+
   log = log || (() => {});
   const start = Date.now();
   log(`doing HTTP - GET ${url}`);
 
-  return fetch(BASE + url, {headers})
+  cachedPromises[url] = fetch(BASE + url, {headers})
   .then(checkStatus)
   .then(res => {
     log(`done in ${Date.now()-start}ms - GET ${url}`);
     return res.json();
   });
+
+  return cachedPromises[url];
 }
 
 function checkStatus (res) {

@@ -4,15 +4,25 @@ const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const client = require('./src/client.js');
 
+const schema = require('./src/schema.js');
+
 const app = express();
 
 let queryCount = 0;
 const createLogger = () => {
   queryCount += 1;
   const prefix = `[Query ${queryCount}]`;
-  return function () {
-    const args = Array.prototype.slice.call(arguments);
-    return console.log.apply(console, [prefix].concat(args));
+  const logs = [];
+
+  return {
+    log: function () {
+      const args = Array.prototype.slice.call(arguments);
+      if (args.length > 0) {
+        logs.push(args.length === 1 ? args[0] : args);
+        console.log.apply(console, [prefix].concat(args));
+      }
+    },
+    getLogs: () => logs
   };
 };
 
@@ -26,15 +36,22 @@ app.get('/ui', (req, res) => {
 });
 
 app.use('/graphql', graphqlHTTP(() => {
-  const log = createLogger();
-  const entryLoader = client.createEntryLoader(log);
+  const start = Date.now();
+  const logger = createLogger();
+  const entryLoader = client.createEntryLoader(logger.log);
 
-  log('arrived');
+  logger.log('arrived');
 
   return {
     context: {entryLoader},
-    schema: require('./src/schema.js'),
-    graphiql: false
+    schema,
+    graphiql: false,
+    extensions: () => ({time: Date.now()-start, logs: logger.getLogs()}),
+    formatError: error => ({
+      message: error.message,
+      locations: error.locations,
+      stack: error.stack
+    })
   };
 }));
 

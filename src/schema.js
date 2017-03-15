@@ -1,11 +1,8 @@
 'use strict';
 
-const graphql = require('graphql');
 const _get = require('lodash.get');
-const upperFirst = require('lodash.upperfirst');
-const camelCase = require('lodash.camelcase');
-const pluralize = require('pluralize');
 
+const graphql = require('graphql');
 const GraphQLObjectType = graphql.GraphQLObjectType;
 const GraphQLList = graphql.GraphQLList;
 const GraphQLString = graphql.GraphQLString;
@@ -14,6 +11,7 @@ const baseTypes = require('./base-types.js');
 const EntrySysType = baseTypes.EntrySysType;
 const AssetType = baseTypes.AssetType;
 const EntryType = baseTypes.EntryType;
+const createBackrefsType = require('./backref-types.js');
 
 const CF_TYPE_TO_FIELD_CONFIG = {
   String: field => createCfFieldConfig(GraphQLString, field),
@@ -107,29 +105,34 @@ function queryFields (cts) {
   const ctIdToType = {};
 
   return cts.reduce((acc, ct) => {
-    const name = camelCase(ct.name);
-
-    const fieldsThunk = () => {
-      return ct.fields.reduce((acc, f) => {
-        acc[f.id] = CF_TYPE_TO_FIELD_CONFIG[f.type](f, ctIdToType);
-        return acc;
-      }, {sys: {type: EntrySysType}});
+    const defaultFieldsThunk = () => {
+      const fields = {sys: {type: EntrySysType}};
+      if (ct.backrefs) {
+        const Type = createBackrefsType(ct, ctIdToType);
+        fields._backrefs = {type: Type, resolve: entry => entry.sys.id};
+      }
+      return fields;
     };
 
+    const fieldsThunk = () => ct.fields.reduce((acc, f) => {
+      acc[f.id] = CF_TYPE_TO_FIELD_CONFIG[f.type](f, ctIdToType);
+      return acc;
+    }, defaultFieldsThunk());
+
     const Type = ctIdToType[ct.id] = new GraphQLObjectType({
-      name: upperFirst(name),
+      name: ct.names.type,
       interfaces: [EntryType],
       fields: fieldsThunk,
       isTypeOf: entry => _get(entry, ['sys', 'contentType', 'sys', 'id']) === ct.id
     });
 
-    acc[name] = {
+    acc[ct.names.field] = {
       type: Type,
       args: {id: {type: baseTypes.IDType}},
       resolve: (_, args, ctx) => ctx.entryLoader.get(args.id, ct.id)
     };
 
-    acc[pluralize(name)] = {
+    acc[ct.names.collectionField] = {
       type: new GraphQLList(Type),
       resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id)
     };

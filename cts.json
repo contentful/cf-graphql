@@ -1,7 +1,12 @@
 [
   {
     "id": "5KMiN6YPvi42icqAUQMCQe",
-    "name": "Category",
+    "names": {
+      "field": "category",
+      "collectionField": "categories",
+      "type": "Category",
+      "backrefsType": "CategoryBackrefs"
+    },
     "fields": [
       {
         "id": "title",
@@ -18,11 +23,23 @@
         "required": false,
         "type": "Link<Asset>"
       }
+    ],
+    "backrefs": [
+      {
+        "ctId": "2wKn6yEnZewu2SCCkus4as",
+        "fieldId": "category",
+        "backrefFieldName": "posts__via__category"
+      }
     ]
   },
   {
     "id": "2wKn6yEnZewu2SCCkus4as",
-    "name": "Post",
+    "names": {
+      "field": "post",
+      "collectionField": "posts",
+      "type": "Post",
+      "backrefsType": "PostBackrefs"
+    },
     "fields": [
       {
         "id": "title",
@@ -80,7 +97,12 @@
   },
   {
     "id": "1kUEViTN4EmGiEaaeC6ouY",
-    "name": "Author",
+    "names": {
+      "field": "author",
+      "collectionField": "authors",
+      "type": "Author",
+      "backrefsType": "AuthorBackrefs"
+    },
     "fields": [
       {
         "id": "name",
@@ -101,12 +123,13 @@
         "id": "biography",
         "required": false,
         "type": "String"
-      },
+      }
+    ],
+    "backrefs": [
       {
-        "id": "createdEntries",
-        "required": false,
-        "type": "Array<Link<Entry>>",
-        "linkedCt": "2wKn6yEnZewu2SCCkus4as"
+        "ctId": "2wKn6yEnZewu2SCCkus4as",
+        "fieldId": "author",
+        "backrefFieldName": "posts__via__author"
       }
     ]
   }

@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "scripts": {
     "get-cts": "node src/get-cts.js",
+    "graph": "mkdir -p dist && graphqlviz http://localhost:4000/graphql | dot -Tpng -o dist/graph.png",
     "start": "nodemon index.js",
     "lint": "eslint '*.js' 'src/*.js'",
-    "zip": "rm -rf dist && mkdir dist && zip -9 -r dist/lambda-cf-graphql.zip . -x@exclude.lst"
+    "zip": "rm -f dist/lambda-cf-graphql.zip && mkdir -p dist && zip -9 -r dist/lambda-cf-graphql.zip . -x@exclude.lst"
   },
   "private": true,
   "license": "UNLICENSED",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "eslint": "^3.17.1",
+    "graphqlviz": "^1.4.0",
     "nodemon": "^1.11.0"
   }
 }
