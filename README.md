@@ -23,7 +23,7 @@ Prepare a zip file:
 
 ```
 npm run zip
-du -h lambda-cf-graphql.zip # yay! small!
+du -h dist/lambda-cf-graphql.zip # yay! small!
 ```
 
 Handlers:

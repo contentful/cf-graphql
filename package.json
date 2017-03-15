@@ -2,10 +2,10 @@
   "name": "cf-graphql",
   "version": "0.0.1",
   "scripts": {
-    "get-cts": "node get-cts.js",
+    "get-cts": "node src/get-cts.js",
     "start": "nodemon index.js",
-    "lint": "eslint '*.js'",
-    "zip": "rm -f lambda-cf-graphql.zip && zip -9 -r lambda-cf-graphql.zip . -x@exclude.lst"
+    "lint": "eslint '*.js' 'src/*.js'",
+    "zip": "rm -rf dist && mkdir dist && zip -9 -r dist/lambda-cf-graphql.zip . -x@exclude.lst"
   },
   "private": true,
   "license": "UNLICENSED",

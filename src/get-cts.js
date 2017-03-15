@@ -29,7 +29,7 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 
 require('./client.js').getContentTypes().then(cts => {
   fs.writeFile(
-    path.join(__dirname, 'cts.json'),
+    path.resolve(__dirname, '..', 'cts.json'),
     JSON.stringify(cleanCts(cts), null, 2)
   );
 

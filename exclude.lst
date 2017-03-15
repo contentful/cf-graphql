@@ -3,11 +3,14 @@
 .eslintrc.json
 .nvmrc
 exclude.lst
-get-cts.js
 index.js
 package.json
 README.md
 
+src/get-cts.js
+dist/*
+
+node_modules/.bin/*
 node_modules/express/*
 node_modules/express-graphql/*
 node_modules/eslint/*

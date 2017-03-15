@@ -2,7 +2,7 @@
 
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
-const client = require('./client.js');
+const client = require('./src/client.js');
 
 const app = express();
 
@@ -16,7 +16,14 @@ const createLogger = () => {
   };
 };
 
-app.use(express.static('.'));
+app.get('/', (req, res) => {
+  res.redirect('/ui');
+});
+
+app.get('/ui', (req, res) => {
+  const ui = require('./src/graphiql.js');
+  res.set(ui.headers).status(ui.statusCode).send(ui.body);
+});
 
 app.use('/graphql', graphqlHTTP(() => {
   const log = createLogger();
@@ -26,7 +33,7 @@ app.use('/graphql', graphqlHTTP(() => {
 
   return {
     context: {entryLoader},
-    schema: require('./schema.js'),
+    schema: require('./src/schema.js'),
     graphiql: false
   };
 }));

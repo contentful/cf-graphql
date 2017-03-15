@@ -29,7 +29,7 @@ const CF_TYPE_TO_FIELD_CONFIG = {
 
 const QueryType = new GraphQLObjectType({
   name: 'Query',
-  fields: queryFields(require('./cts.json'))
+  fields: queryFields(require('../cts.json'))
 });
 
 module.exports = new graphql.GraphQLSchema({query: QueryType});

@@ -1,6 +1,6 @@
 'use strict';
 
-const config = require('./config.json');
+const config = require('../config.json');
 const spaceId = config.spaceId;
 const cdaToken = config.cdaToken;
 
