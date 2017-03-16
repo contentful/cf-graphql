@@ -1,13 +1,13 @@
 'use strict';
 
-const graphql = require('graphql');
 const _get = require('lodash.get');
+const graphql = require('graphql');
 
 module.exports = createBackrefsType;
 
 function createBackrefsType (ct, ctIdToType) {
   return new graphql.GraphQLObjectType({
-    name: `${ct.names.backrefsType}`,
+    name: ct.names.backrefsType,
     fields: ct.backrefs.reduce((acc, br) => {
       const Type = ctIdToType[br.ctId];
       if (Type) {
@@ -33,7 +33,7 @@ function filterEntries (entries, refFieldId, entryId) {
     const refField = _get(entry, ['fields', refFieldId]);
 
     if (Array.isArray(refField)) {
-      return !!refField.find(l => _get(l, ['sys', 'id']) === entryId);
+      return !!refField.find(link => _get(link, ['sys', 'id']) === entryId);
     } else if (typeof refField === 'object') {
       return _get(refField, ['sys', 'id']) === entryId;
     } else {

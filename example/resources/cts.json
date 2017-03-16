@@ -71,7 +71,7 @@
       {
         "id": "tags",
         "required": false,
-        "type": "Array<Symbol>"
+        "type": "Array<String>"
       },
       {
         "id": "featuredImage",
