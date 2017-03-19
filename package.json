@@ -1,21 +1,18 @@
 {
   "name": "cf-graphql",
   "version": "0.0.1",
+  "main": "index.js",
   "scripts": {
-    "get-cts": "node src/get-cts.js",
-    "graph": "mkdir -p dist && graphqlviz http://localhost:4000/graphql | dot -Tpng -o dist/graph.png",
-    "start": "nodemon index.js",
-    "lint": "eslint '*.js' 'src/*.js'",
-    "zip": "rm -f dist/lambda-cf-graphql.zip && mkdir -p dist && zip -9 -r dist/lambda-cf-graphql.zip . -x@exclude.lst"
+    "example-prepare": "node example/prepare-cts.js",
+    "example-server": "nodemon example/server.js",
+    "example-graph": "graphqlviz http://localhost:4000/graphql | dot -Tpng -o example/resources/graph.png",
+    "lint": "eslint index.js 'src/*.js' 'example/*.js'"
   },
   "private": true,
   "license": "UNLICENSED",
   "dependencies": {
     "dataloader": "^1.3.0",
-    "express": "^4.15.2",
-    "express-graphql": "^0.6.3",
     "graphql": "^0.9.1",
-    "graphql-server-lambda": "^0.6.0",
     "lodash.camelcase": "^4.3.0",
     "lodash.get": "^4.4.2",
     "lodash.upperfirst": "^4.3.1",
@@ -24,6 +21,8 @@
   },
   "devDependencies": {
     "eslint": "^3.17.1",
+    "express": "^4.15.2",
+    "express-graphql": "^0.6.3",
     "graphqlviz": "^1.4.0",
     "nodemon": "^1.11.0"
   }

@@ -1,7 +1,7 @@
 'use strict';
 
-const graphql = require('graphql');
 const _get = require('lodash.get');
+const graphql = require('graphql');
 
 const GraphQLNonNull = graphql.GraphQLNonNull;
 const GraphQLString = graphql.GraphQLString;
@@ -35,9 +35,18 @@ const AssetType = new GraphQLObjectType({
   name: 'Asset',
   fields: {
     sys: {type: AssetSysType},
-    title: {type: IDType},
-    description: {type: GraphQLString},
-    url: {type: GraphQLString}
+    title: {
+      type: GraphQLString,
+      resolve: asset =>  _get(asset, ['fields', 'title'])
+    },
+    description: {
+      type: GraphQLString,
+      resolve: asset => _get(asset, ['fields', 'description'])
+    },
+    url: {
+      type: GraphQLString,
+      resolve: asset => _get(asset, ['fields', 'file', 'url'])
+    }
   }
 });
 

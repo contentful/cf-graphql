@@ -1,7 +1,5 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const _get = require('lodash.get');
 const upperFirst = require('lodash.upperfirst');
 const camelCase = require('lodash.camelcase');
@@ -15,7 +13,7 @@ const ENTITY_TYPES = [
 const SHORTCUT_FIELD_TYPE_MAPPING = {
   Entry: 'Link<Entry>',
   Asset: 'Link<Asset>',
-  Symbols: 'Array<Symbol>',
+  Symbols: 'Array<String>',
   Entries: 'Array<Link<Entry>>',
   Assets: 'Array<Link<Asset>>'
 };
@@ -30,39 +28,32 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
   Object: 'Object'
 };
 
-require('./client.js').getContentTypes().then(cts => {
-  cts = cleanCts(cts);
-  cts = addBackrefs(cts);
+module.exports = prepareCts;
 
-  fs.writeFile(
-    path.resolve(__dirname, '..', 'cts.json'),
-    JSON.stringify(cts, null, 2)
-  );
-
-  console.log('Saved', cts.map(ct => ct.names.type).join(', '));
-}, err => {
-  console.log(err);
-  process.exit(1);
-});
+function prepareCts (cts) {
+  return addBackrefs(cleanCts(cts));
+}
 
 function cleanCts (cts) {
-  return cts.map(ct => {
-    const fieldName = camelCase(ct.name);
-    const typeName = upperFirst(fieldName);
+  return cts.map(ct => ({
+    id: ct.sys.id,
+    names: names(ct.name),
+    fields: ct.fields.reduce((acc, f) => {
+      return f.omitted ? acc : acc.concat([field(f)]);
+    }, [])
+  }));
+}
 
-    return {
-      id: ct.sys.id,
-      names: {
-        field: fieldName,
-        collectionField: pluralize(fieldName),
-        type: typeName,
-        backrefsType: `${typeName}Backrefs`
-      },
-      fields: ct.fields.reduce((acc, f) => {
-        return f.omitted ? acc : acc.concat([field(f)]);
-      }, [])
-    };
-  });
+function names (name) {
+  const fieldName = camelCase(name);
+  const typeName = upperFirst(fieldName);
+
+  return {
+    field: fieldName,
+    collectionField: pluralize(fieldName),
+    type: typeName,
+    backrefsType: `${typeName}Backrefs`
+  };
 }
 
 function field (f) {
@@ -81,7 +72,7 @@ function field (f) {
 function type (f) {
   if (f.type === 'Array') {
     if (f.items.type === 'Symbol') {
-      return 'Array<Symbol>';
+      return 'Array<String>';
     } else if (f.items.type === 'Link' && isEntityType(f.items.linkType)) {
       return `Array<Link<${f.items.linkType}>>`;
     } else {

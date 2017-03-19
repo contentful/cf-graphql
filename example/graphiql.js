@@ -1,0 +1,62 @@
+'use strict';
+
+module.exports = getResponse;
+
+function getResponse () {
+  return {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache'
+    },
+    body: body()
+  };
+}
+
+function body () {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GraphiQL</title>
+  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.9.3/graphiql.min.css">
+  <style>
+    body {margin: 0; height: 100%; width: 100%; overflow: hidden;}
+    #graphiql {height: 100vh;}
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.9.3/graphiql.min.js"></script>
+</head>
+<body>
+  <div id="graphiql">Loading...</div>
+  <script>
+    ReactDOM.render(
+      React.createElement(GraphiQL, {fetcher: fetcher}),
+      document.getElementById('graphiql')
+    );
+
+    function fetcher (params) {
+      return fetch('graphql', {
+        method: 'post',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params)
+      }).then(function (res) {
+        return res.text();
+      }).then(function (res) {
+        try {
+          return JSON.parse(res);
+        } catch (err) {
+          return res;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+`;
+}
