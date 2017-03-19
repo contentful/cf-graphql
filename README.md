@@ -36,9 +36,3 @@ vi example/resources/config.json
 npm run example-prepare
 npm run example-server
 ```
-
-## TODOs
-
-- [ ] Querying for collections
-- [ ] Pagination
-- [ ] Checks for the name generation logic

@@ -1,9 +1,12 @@
 'use strict';
 
 const _get = require('lodash.get');
+const chunk = require('lodash.chunk');
 const qs = require('querystring');
 const fetch = require('node-fetch');
 const DataLoader = require('dataloader');
+
+const CHUNK_SIZE = 100;
 
 module.exports = createClient;
 
@@ -22,9 +25,9 @@ function createClient (config) {
   }
 
   function httpGet (url, params, timeline, cachedPromises) {
-    params = qs.stringify(params || {});
-    if (typeof params === 'string' && params.length > 0) {
-      url = `${url}?${params}`;
+    const sortedQS = getSortedQS(params);
+    if (typeof sortedQS === 'string' && sortedQS.length > 0) {
+      url = `${url}?${sortedQS}`;
     }
 
     cachedPromises = cachedPromises || {};
@@ -62,18 +65,21 @@ function createClient (config) {
     };
 
     function load (ids) {
-      const params =  {'sys.id[in]': ids.join(',')};
-      return httpGet('/entries', params, timeline, cachedPromises)
-      .then(res => {
+      const requests = chunk(ids, CHUNK_SIZE)
+      .map(ids => httpGet('/entries', {
+        limit: CHUNK_SIZE,
+        skip: 0,
+        include: 1,
+        'sys.id[in]': ids.join(',')
+      }, timeline, cachedPromises));
+
+      return Promise.all(requests)
+      .then(responses => responses.reduce((acc, res) => {
         prime(res);
-
-        const byId = res.items.reduce((acc, e) => {
-          acc[e.sys.id] = e;
-          return acc;
-        }, {});
-
-        return ids.map(id => byId[id]);
-      });
+        _get(res, ['items'], []).forEach(e => acc[e.sys.id] = e);
+        return acc;
+      }, {}))
+      .then(byId => ids.map(id => byId[id]));
     }
 
     function getOne (id, forcedCtId) {
@@ -89,7 +95,13 @@ function createClient (config) {
     }
 
     function query (ctId, q) {
-      const params = Object.assign({content_type: ctId}, q || {});
+      const params = Object.assign({
+        limit: 100,
+        skip: 0,
+        include: 1,
+        content_type: ctId
+      }, qs.parse(q || ''));
+
       return httpGet('/entries', params, timeline, cachedPromises)
       .then(res => {
         prime(res);
@@ -98,7 +110,8 @@ function createClient (config) {
     }
 
     function prime (res) {
-      res.items.concat(_get(res, ['includes', 'Entry'], []))
+      _get(res, ['items'], [])
+      .concat(_get(res, ['includes', 'Entry'], []))
       .forEach(e => loader.prime(e.sys.id, e));
 
       _get(res, ['includes', 'Asset'], [])
@@ -115,4 +128,21 @@ function checkStatus (res) {
     err.response = res;
     throw err;
   }
+}
+
+function getSortedQS (params) {
+  const sortedParams = Object.keys(params).sort();
+  const qsPairs = sortedParams.reduce((acc, key) => {
+    const pair = {};
+    pair[key] = params[key];
+    const s = qs.stringify(pair);
+
+    if (typeof s === 'string' && s.length > 0) {
+      return acc.concat([s]);
+    } else {
+      return acc;
+    }
+  }, []);
+
+  return qsPairs.join('&');
 }

@@ -56,7 +56,8 @@ function queryFields (cts) {
 
     acc[ct.names.collectionField] = {
       type: new graphql.GraphQLList(Type),
-      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id)
+      args: {q: {type: graphql.GraphQLString}},
+      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id, args.q)
     };
 
     return acc;

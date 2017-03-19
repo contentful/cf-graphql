@@ -37,6 +37,7 @@ function prepareCts (cts) {
 function cleanCts (cts) {
   return cts.map(ct => ({
     id: ct.sys.id,
+    // TODO: check for conflicts
     names: names(ct.name),
     fields: ct.fields.reduce((acc, f) => {
       return f.omitted ? acc : acc.concat([field(f)]);
