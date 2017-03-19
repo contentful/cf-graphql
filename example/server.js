@@ -8,10 +8,12 @@ const client = cfGraphql.createClient(require('./resources/config.json'));
 const schema = cfGraphql.createSchema(require('./resources/cts.json'));
 const createUI = require('./graphiql.js');
 
+const PORT = 4000;
+
 const app = express();
 
 app.get('/', (req, res) => {
-  const ui = createUI();
+  const ui = createUI(`http://localhost:${PORT}/graphql`);
   res.set(ui.headers).status(ui.statusCode).end(ui.body);
 });
 
@@ -37,5 +39,5 @@ app.use('/graphql', graphqlHTTP(() => {
   };
 }));
 
-app.listen(4000);
-console.log('Listening on 4000');
+app.listen(PORT);
+console.log(`Listening on ${PORT}`);

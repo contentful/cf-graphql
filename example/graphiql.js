@@ -2,18 +2,20 @@
 
 module.exports = getResponse;
 
-function getResponse () {
+function getResponse (url) {
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-cache'
     },
-    body: body()
+    body: body(url)
   };
 }
 
-function body () {
+function body (url) {
+  url = url || '/graphql';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,7 +40,7 @@ function body () {
     );
 
     function fetcher (params) {
-      return fetch('graphql', {
+      return fetch('${url}', {
         method: 'post',
         headers: {
           Accept: 'application/json',
