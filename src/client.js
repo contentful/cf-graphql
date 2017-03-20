@@ -20,7 +20,7 @@ function createClient (config) {
   };
 
   function getContentTypes () {
-    return httpGet('/content_types')
+    return httpGet('/content_types', {limit: 1000})
     .then(res => res.items);
   }
 

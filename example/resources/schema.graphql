@@ -63,11 +63,11 @@ type Post implements Entry {
 
 type Query {
   category(id: ID!): Category
-  categories: [Category]
+  categories(q: String): [Category]
   post(id: ID!): Post
-  posts: [Post]
+  posts(q: String): [Post]
   author(id: ID!): Author
-  authors: [Author]
+  authors(q: String): [Author]
 }
 
 interface Sys {
