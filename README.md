@@ -9,6 +9,17 @@ Generated artifacts can be used with any node-based GraphQL server. The outcome
 of the project's main function call is an instance of the
 [`GraphQLSchema`](http://graphql.org/graphql-js/type/#graphqlschema) class.
 
+## First steps
+
+If you just want to see how it works, please follow the [Example](#example)
+section. If you want to get your hands dirty, install the package:
+
+```
+npm install --save cf-graphql
+```
+
+... and follow the [Usage](#usage) section.
+
 
 ## Example
 
@@ -23,7 +34,8 @@ npm run example-server
 
 Navigate to <http://localhost:4000> to access an IDE (GraphiQL). You can query
 [a pregenerated schema](./example/resources/schema.graphql) of my space there.
-Here is how its graph looks like:
+Please refer the [Querying](#querying) section. Here is how its graph looks
+like:
 
 ![Schema graph](./example/resources/graph.png)
 
@@ -178,11 +190,11 @@ When using backreferences, there is a couple of things to keep in mind:
   be renamed, just tweak `backrefFieldName` in an array passed to `createSchema`
 
 
-  ## Contributing
+## Contributing
 
-  Please do. Open an issue/PR and optionally ping @jelz.
+Please do. Open an issue/PR and optionally ping @jelz.
 
 
-  ## License
+## License
 
-  MIT
+MIT
