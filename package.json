@@ -1,6 +1,15 @@
 {
   "name": "cf-graphql",
   "version": "0.0.1",
+  "license": "MIT",
+  "repository": "jelz/cf-graphql",
+  "contributors": [
+    {
+      "name": "Jakub Elżbieciak",
+      "email": "jelz@post.pl",
+      "url": "https://elzbieciak.pl/"
+    }
+  ],
   "main": "index.js",
   "scripts": {
     "example-prepare": "node example/prepare-cts.js",
@@ -8,8 +17,6 @@
     "example-graph": "graphqlviz http://localhost:4000/graphql | dot -Tpng -o example/resources/graph.png",
     "lint": "eslint index.js 'src/*.js' 'example/*.js'"
   },
-  "private": true,
-  "license": "UNLICENSED",
   "dependencies": {
     "dataloader": "^1.3.0",
     "graphql": "^0.9.1",

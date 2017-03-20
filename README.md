@@ -176,3 +176,13 @@ When using backreferences, there is a couple of things to keep in mind:
 - `__via__` is surrounded with two underscores; this name makes sense for me
   ("get posts that link to author via the _author_ field") but of course it can
   be renamed, just tweak `backrefFieldName` in an array passed to `createSchema`
+
+
+  ## Contributing
+
+  Please do. Open an issue/PR and optionally ping @jelz.
+
+
+  ## License
+
+  MIT
