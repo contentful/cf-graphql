@@ -85,7 +85,7 @@ function createClient (config) {
     function getOne (id, forcedCtId) {
       return loader.load(id)
       .then(res => {
-        const ctId = _get(res ['sys', 'contentType', 'sys', 'id']);
+        const ctId = _get(res, ['sys', 'contentType', 'sys', 'id']);
         if (forcedCtId && ctId !== forcedCtId) {
           throw new Error('Does not match the forced Content Type ID.');
         } else {
