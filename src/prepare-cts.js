@@ -22,6 +22,7 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
   Symbol: 'String',
   Text: 'String',
   Number: 'Int',
+  Integer: 'Int',  
   Date: 'String',
   Boolean: 'Bool',
   Location: 'Object',
