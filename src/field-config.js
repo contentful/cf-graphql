@@ -13,6 +13,7 @@ const EntryType = baseTypes.EntryType;
 module.exports = {
   String: field => createFieldConfig(GraphQLString, field),
   Int: field => createFieldConfig(graphql.GraphQLInt, field),
+  Float: field => createFieldConfig(graphql.GraphQLFloat, field),
   Bool: field => createFieldConfig(graphql.GraphQLBoolean, field),
   Object: createObjectFieldConfig,
   'Array<String>': createArrayOfStringsFieldConfig,
