@@ -22,14 +22,14 @@ function body (url) {
   <meta charset="utf-8">
   <title>GraphiQL</title>
   <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.9.3/graphiql.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.10.1/graphiql.min.css">
   <style>
     body {margin: 0; height: 100%; width: 100%; overflow: hidden;}
     #graphiql {height: 100vh;}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.9.3/graphiql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.10.1/graphiql.min.js"></script>
 </head>
 <body>
   <div id="graphiql">Loading...</div>
