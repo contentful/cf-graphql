@@ -54,9 +54,7 @@ function createAssetFieldConfig (field) {
 function createArrayOfAssetsFieldConfig (field) {
   return createFieldConfig(new GraphQLList(AssetType), field, (links, ctx) => {
     if (Array.isArray(links)) {
-      return links
-      .map(link => getAsset(link, ctx))
-      .filter(asset => typeof asset === 'object');
+      return links.map(link => getAsset(link, ctx)).filter(is('object'));
     }
   });
 }
@@ -80,14 +78,16 @@ function createArrayOfEntriesFieldConfig (field, ctIdToType) {
 
   return createFieldConfig(Type, field, (links, ctx) => {
     if (Array.isArray(links)) {
-      const ids = links
-      .map(getLinkedId)
-      .filter(id => typeof id === 'string');
-      return ctx.entryLoader.getMany(ids);
+      const ids = links.map(getLinkedId).filter(is('string'));
+      return ctx.entryLoader.getMany(ids).then(coll => coll.filter(is('object')));
     }
   });
 }
 
 function getLinkedId (link) {
   return _get(link, ['sys', 'id']);
+}
+
+function is (type) {
+  return entity => typeof entity === type;
 }
