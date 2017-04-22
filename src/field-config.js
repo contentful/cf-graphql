@@ -1,22 +1,24 @@
 'use strict';
 
 const _get = require('lodash.get');
-const graphql = require('graphql');
-const baseTypes = require('./base-types.js');
 
-const GraphQLString = graphql.GraphQLString;
-const GraphQLList = graphql.GraphQLList;
+const {
+  GraphQLString,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLBoolean,
+  GraphQLList
+} = require('graphql');
 
-const AssetType = baseTypes.AssetType;
-const EntryType = baseTypes.EntryType;
+const {AssetType, EntryType} = require('./base-types.js');
 
 const NOTHING = {};
 
 module.exports = {
   String: field => createFieldConfig(GraphQLString, field),
-  Int: field => createFieldConfig(graphql.GraphQLInt, field),
-  Float: field => createFieldConfig(graphql.GraphQLFloat, field),
-  Bool: field => createFieldConfig(graphql.GraphQLBoolean, field),
+  Int: field => createFieldConfig(GraphQLInt, field),
+  Float: field => createFieldConfig(GraphQLFloat, field),
+  Bool: field => createFieldConfig(GraphQLBoolean, field),
   Object: createObjectFieldConfig,
   'Array<String>': createArrayOfStringsFieldConfig,
   'Link<Asset>': createAssetFieldConfig,

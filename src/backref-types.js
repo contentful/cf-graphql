@@ -1,12 +1,12 @@
 'use strict';
 
 const _get = require('lodash.get');
-const graphql = require('graphql');
+const {GraphQLObjectType, GraphQLList} = require('graphql');
 
 module.exports = createBackrefsType;
 
 function createBackrefsType (ct, ctIdToType) {
-  return new graphql.GraphQLObjectType({
+  return new GraphQLObjectType({
     name: ct.names.backrefsType,
     fields: ct.backrefs.reduce((acc, br) => {
       const Type = ctIdToType[br.ctId];
@@ -20,7 +20,7 @@ function createBackrefsType (ct, ctIdToType) {
 
 function createBackrefFieldConfig (br, Type) {
   return {
-    type: new graphql.GraphQLList(Type),
+    type: new GraphQLList(Type),
     resolve: (entryId, _, ctx) => {
       // TODO: should fetch all entries before filtering
       // multiple requests may be required, limit=1000 is the maximal value

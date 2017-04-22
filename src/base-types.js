@@ -1,13 +1,16 @@
 'use strict';
 
 const _get = require('lodash.get');
-const graphql = require('graphql');
 
-const GraphQLNonNull = graphql.GraphQLNonNull;
-const GraphQLString = graphql.GraphQLString;
-const GraphQLObjectType = graphql.GraphQLObjectType;
+const {
+  GraphQLNonNull,
+  GraphQLString,
+  GraphQLObjectType,
+  GraphQLID,
+  GraphQLInterfaceType
+} = require('graphql');
 
-const IDType = new GraphQLNonNull(graphql.GraphQLID);
+const IDType = new GraphQLNonNull(GraphQLID);
 const NonNullStringType = new GraphQLNonNull(GraphQLString);
 
 const baseSysFields = {
@@ -23,7 +26,7 @@ const entrySysFields = {
   }
 };
 
-const SysType = new graphql.GraphQLInterfaceType({
+const SysType = new GraphQLInterfaceType({
   name: 'Sys',
   fields: baseSysFields
 });
@@ -50,7 +53,7 @@ const AssetType = new GraphQLObjectType({
   }
 });
 
-const EntryType = new graphql.GraphQLInterfaceType({
+const EntryType = new GraphQLInterfaceType({
   name: 'Entry',
   fields: {sys: {type: EntrySysType}}
 });

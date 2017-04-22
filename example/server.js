@@ -13,8 +13,8 @@ const PORT = 4000;
 const app = express();
 
 app.get('/', (req, res) => {
-  const ui = createUI(`http://localhost:${PORT}/graphql`);
-  res.set(ui.headers).status(ui.statusCode).end(ui.body);
+  const {headers, statusCode, body} = createUI(`http://localhost:${PORT}/graphql`);
+  res.set(headers).status(statusCode).end(body);
 });
 
 app.use('/graphql', graphqlHTTP(() => {
