@@ -14,7 +14,7 @@ type AssetSys implements Sys {
 type Author implements Entry {
   sys: EntrySys!
   _backrefs: AuthorBackrefs
-  name: String!
+  name: String
   website: String
   profilePhoto: Asset
   biography: String
@@ -27,7 +27,7 @@ type AuthorBackrefs {
 type Category implements Entry {
   sys: EntrySys!
   _backrefs: CategoryBackrefs
-  title: String!
+  title: String
   shortDescription: String
   icon: Asset
 }
@@ -49,9 +49,9 @@ type EntrySys implements Sys {
 
 type Post implements Entry {
   sys: EntrySys!
-  title: String!
+  title: String
   slug: String
-  author: [Author]!
+  author: [Author]
   body: String
   category: [Category]
   tags: [String]

@@ -10,6 +10,8 @@ const GraphQLList = graphql.GraphQLList;
 const AssetType = baseTypes.AssetType;
 const EntryType = baseTypes.EntryType;
 
+const NOTHING = {};
+
 module.exports = {
   String: field => createFieldConfig(GraphQLString, field),
   Int: field => createFieldConfig(graphql.GraphQLInt, field),
@@ -25,11 +27,10 @@ module.exports = {
 
 function createFieldConfig (Type, field, resolveFn) {
   return {
-    type: field.required ? new graphql.GraphQLNonNull(Type) : Type,
+    type: Type,
     resolve: (entity, _, ctx) => {
-      const uniqueNothing = {};
-      const fieldValue = _get(entity, ['fields', field.id], uniqueNothing);
-      if (fieldValue !== uniqueNothing) {
+      const fieldValue = _get(entity, ['fields', field.id], NOTHING);
+      if (fieldValue !== NOTHING) {
         return resolveFn ? resolveFn(fieldValue, ctx) : fieldValue;
       }
     }

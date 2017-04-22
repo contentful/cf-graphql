@@ -10,17 +10,14 @@
     "fields": [
       {
         "id": "title",
-        "required": true,
         "type": "String"
       },
       {
         "id": "shortDescription",
-        "required": false,
         "type": "String"
       },
       {
         "id": "icon",
-        "required": false,
         "type": "Link<Asset>"
       }
     ],
@@ -43,54 +40,44 @@
     "fields": [
       {
         "id": "title",
-        "required": true,
         "type": "String"
       },
       {
         "id": "slug",
-        "required": false,
         "type": "String"
       },
       {
         "id": "author",
-        "required": true,
         "type": "Array<Link<Entry>>",
         "linkedCt": "1kUEViTN4EmGiEaaeC6ouY"
       },
       {
         "id": "body",
-        "required": false,
         "type": "String"
       },
       {
         "id": "category",
-        "required": false,
         "type": "Array<Link<Entry>>",
         "linkedCt": "5KMiN6YPvi42icqAUQMCQe"
       },
       {
         "id": "tags",
-        "required": false,
         "type": "Array<String>"
       },
       {
         "id": "featuredImage",
-        "required": false,
         "type": "Link<Asset>"
       },
       {
         "id": "date",
-        "required": false,
         "type": "String"
       },
       {
         "id": "comments",
-        "required": false,
         "type": "Bool"
       },
       {
         "id": "related",
-        "required": false,
         "type": "Array<Link<Entry>>"
       }
     ]
@@ -106,22 +93,18 @@
     "fields": [
       {
         "id": "name",
-        "required": true,
         "type": "String"
       },
       {
         "id": "website",
-        "required": false,
         "type": "String"
       },
       {
         "id": "profilePhoto",
-        "required": false,
         "type": "Link<Asset>"
       },
       {
         "id": "biography",
-        "required": false,
         "type": "String"
       }
     ],

@@ -22,7 +22,7 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
   Symbol: 'String',
   Text: 'String',
   Number: 'Float',
-  Integer: 'Int',  
+  Integer: 'Int',
   Date: 'String',
   Boolean: 'Bool',
   Location: 'Object',
@@ -65,7 +65,6 @@ function field (f) {
 
   return {
     id: f.id,
-    required: f.required,
     type: type(f),
     linkedCt: linkedCt(f)
   };
