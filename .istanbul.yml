@@ -2,4 +2,4 @@ instrumentation:
   include-all-sources: true
   excludes:
     - index.js
-    - example/**
+    - example.js

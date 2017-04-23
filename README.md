@@ -75,7 +75,7 @@ app.use('/graphql', graphqlHTTP(() => ({
 })));
 ```
 
-[You can see a fully-fledged example here](./example/server.js).
+[You can see a fully-fledged example here](./example.js).
 
 
 ## Querying

@@ -9,7 +9,7 @@ const express = require('express');
 const graphqlHTTP = require('express-graphql');
 
 // requiring a local module; outside of this repo require "cf-graphql"
-const cfGraphql = require('..');
+const cfGraphql = require('.');
 
 const port = process.env.PORT || PORT;
 const spaceId = process.env.SPACE_ID  || SPACE_ID;
