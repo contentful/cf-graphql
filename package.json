@@ -25,9 +25,10 @@
   ],
   "main": "index.js",
   "scripts": {
-    "example-prepare": "node example/prepare-cts.js",
-    "example-server": "nodemon example/server.js",
-    "example-graph": "graphqlviz http://localhost:4000/graphql | dot -Tpng -o example/resources/graph.png",
+    "example": "nodemon example/server.js",
+    "dump": "mkdirp dump && npm run dump-graph && npm run dump-schema",
+    "dump-graph": "graphqlviz http://localhost:4000/graphql | dot -Tpng -o dump/graph.png",
+    "dump-schema": "fetch-graphql-schema http://localhost:4000/graphql -r -o dump/schema.graphql",
     "lint": "eslint index.js 'src/*.js' 'example/*.js' 'test/*.js'",
     "test": "tape 'test/*.js'",
     "coverage": "istanbul cover tape 'test/*.js'",
@@ -48,8 +49,10 @@
     "eslint": "^3.19.0",
     "express": "^4.15.2",
     "express-graphql": "^0.6.4",
+    "fetch-graphql-schema": "^0.2.1",
     "graphqlviz": "^1.4.0",
     "istanbul": "^0.4.5",
+    "mkdirp": "^0.5.1",
     "nodemon": "^1.11.0",
     "tape": "^4.6.3"
   }
