@@ -28,7 +28,9 @@
     "example-prepare": "node example/prepare-cts.js",
     "example-server": "nodemon example/server.js",
     "example-graph": "graphqlviz http://localhost:4000/graphql | dot -Tpng -o example/resources/graph.png",
-    "lint": "eslint index.js 'src/*.js' 'example/*.js'"
+    "lint": "eslint index.js 'src/*.js' 'example/*.js' 'test/*.js'",
+    "test": "tape 'test/*.js'",
+    "coverage": "istanbul cover tape 'test/*.js'"
   },
   "dependencies": {
     "dataloader": "^1.3.0",
@@ -45,6 +47,8 @@
     "express": "^4.15.2",
     "express-graphql": "^0.6.4",
     "graphqlviz": "^1.4.0",
-    "nodemon": "^1.11.0"
+    "istanbul": "^0.4.5",
+    "nodemon": "^1.11.0",
+    "tape": "^4.6.3"
   }
 }
