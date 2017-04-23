@@ -1,5 +1,11 @@
 # cf-graphql
 
+[![travis build](https://img.shields.io/travis/jelz/cf-graphql.svg)](https://travis-ci.org/jelz/cf-graphql)
+[![npm](https://img.shields.io/npm/v/cf-graphql.svg)](https://www.npmjs.com/package/cf-graphql)
+[![npm downloads](https://img.shields.io/npm/dt/cf-graphql.svg)](https://www.npmjs.com/package/cf-graphql)
+[![deps status](https://img.shields.io/david/jelz/cf-graphql.svg)](https://david-dm.org/jelz/cf-graphql)
+[![dev deps status](https://img.shields.io/david/dev/jelz/cf-graphql.svg)](https://david-dm.org/jelz/cf-graphql?type=dev)
+
 `cf-graphql` is a library that allows you to query your data stored in
 [Contentful](https://www.contentful.com/) with [GraphQL](http://graphql.org/).
 A schema and value resolvers are automatically generated out of an existing
