@@ -10,7 +10,6 @@ const graphqlHTTP = require('express-graphql');
 
 // requiring a local module; outside of this repo require "cf-graphql"
 const cfGraphql = require('..');
-const createUI = require('./graphiql.js');
 
 const port = process.env.PORT || PORT;
 const spaceId = process.env.SPACE_ID  || SPACE_ID;
@@ -33,7 +32,7 @@ client.getContentTypes()
 
 function startServer (schema) {
   const app = express();
-  const ui = createUI(`http://localhost:${port}/graphql`);
+  const ui = cfGraphql.createUI(`http://localhost:${port}/graphql`);
 
   app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
 
