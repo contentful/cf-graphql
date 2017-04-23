@@ -23,7 +23,7 @@ function createBackrefFieldConfig (br, Type) {
     type: new GraphQLList(Type),
     resolve: (entryId, _, ctx) => {
       // TODO: should fetch all entries before filtering
-      // multiple requests may be required, limit=1000 is the maximal value
+      // multiple requests may be needed, 1000 is the maximal value of limit
       return ctx.entryLoader.query(br.ctId, 'limit=1000')
       .then(entries => filterEntries(entries, br.fieldId, entryId));
     }

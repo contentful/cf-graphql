@@ -14,6 +14,7 @@ const {AssetType, EntryType} = require('./base-types.js');
 
 const NOTHING = {};
 
+// TODO: handle "Location" and "Date(time)"
 module.exports = {
   String: field => createFieldConfig(GraphQLString, field),
   Int: field => createFieldConfig(GraphQLInt, field),
