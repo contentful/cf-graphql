@@ -29,13 +29,9 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
   Object: 'Object'
 };
 
-module.exports = prepareCts;
+module.exports = cts => addBackrefs(prepareCts(cts));
 
 function prepareCts (cts) {
-  return addBackrefs(cleanCts(cts));
-}
-
-function cleanCts (cts) {
   return cts.map(ct => ({
     id: ct.sys.id,
     // TODO: check for conflicts
@@ -59,9 +55,11 @@ function names (name) {
 }
 
 function field (f) {
-  if (f.id === 'sys') {
-    throw new Error('Fields named "sys" are unsupported');
-  }
+  ['sys', '_backrefs'].forEach(id => {
+    if (f.id === id) {
+      throw new Error(`Fields named "${id}" are unsupported`);
+    }
+  });
 
   return {
     id: f.id,
@@ -119,13 +117,13 @@ function addBackrefs (cts) {
   }, {});
 
   cts.forEach(ct => ct.fields.forEach(field => {
-    if (field.linkedCt) {
+    if (field.linkedCt && byId[field.linkedCt]) {
       const linked = byId[field.linkedCt];
       linked.backrefs = linked.backrefs || [];
       linked.backrefs.push({
         ctId: ct.id,
         fieldId: field.id,
-        backrefFieldName: ct.names.collectionField + '__via__' + field.id
+        backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
       });
     }
   }));
