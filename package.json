@@ -54,6 +54,8 @@
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.1",
     "nodemon": "^1.11.0",
+    "proxyquire": "^1.7.11",
+    "sinon": "^2.1.0",
     "tape": "^4.6.3"
   }
 }
