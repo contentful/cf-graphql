@@ -3,8 +3,9 @@
 const _get = require('lodash.get');
 const chunk = require('lodash.chunk');
 const qs = require('querystring');
-const fetch = require('node-fetch');
 const DataLoader = require('dataloader');
+
+const createHttpClient = require('./http-client.js');
 
 const CHUNK_SIZE = 100;
 
@@ -20,58 +21,32 @@ function createClient (config) {
   };
 
   function getContentTypes () {
-    return httpGet('/content_types', {limit: 1000})
+    const http = createHttpClient({base, headers});
+    return http.get('/content_types', {limit: 1000})
     .then(res => res.items);
   }
 
-  function httpGet (url, params, timeline, cachedPromises) {
-    const sortedQS = getSortedQS(params);
-    if (typeof sortedQS === 'string' && sortedQS.length > 0) {
-      url = `${url}?${sortedQS}`;
-    }
-
-    cachedPromises = cachedPromises || {};
-    const cached = cachedPromises[url];
-    if (cached) {
-      return cached;
-    }
-
-    timeline = timeline || [];
-    const httpCall = {url, start: Date.now()};
-    timeline.push(httpCall);
-
-    cachedPromises[url] = fetch(base + url, {headers})
-    .then(checkStatus)
-    .then(res => {
-      httpCall.duration = Date.now()-httpCall.start;
-      return res.json();
-    });
-
-    return cachedPromises[url];
-  }
-
   function createEntryLoader () {
+    const http = createHttpClient({base, headers});
     const loader = new DataLoader(load);
     const assets = {};
-    const timeline = [];
-    const cachedPromises = {};
 
     return {
       get: getOne,
       getMany: loader.loadMany.bind(loader),
       query,
       getIncludedAsset: id => assets[id],
-      getTimeline: () => timeline
+      getTimeline: () => http.timeline
     };
 
     function load (ids) {
       const requests = chunk(ids, CHUNK_SIZE)
-      .map(ids => httpGet('/entries', {
+      .map(ids => http.get('/entries', {
         limit: CHUNK_SIZE,
         skip: 0,
         include: 1,
         'sys.id[in]': ids.join(',')
-      }, timeline, cachedPromises));
+      }));
 
       return Promise.all(requests)
       .then(responses => responses.reduce((acc, res) => {
@@ -102,11 +77,7 @@ function createClient (config) {
         content_type: ctId
       }, qs.parse(q || ''));
 
-      return httpGet('/entries', params, timeline, cachedPromises)
-      .then(res => {
-        prime(res);
-        return res.items;
-      });
+      return http.get('/entries', params).then(prime);
     }
 
     function prime (res) {
@@ -116,33 +87,8 @@ function createClient (config) {
 
       _get(res, ['includes', 'Asset'], [])
       .forEach(a => assets[a.sys.id] = a);
+
+      return res.items;
     }
   }
-}
-
-function checkStatus (res) {
-  if (res.status >= 200 && res.status < 300) {
-    return res;
-  } else {
-    const err = new Error(res.statusText);
-    err.response = res;
-    throw err;
-  }
-}
-
-function getSortedQS (params) {
-  const sortedParams = Object.keys(params).sort();
-  const qsPairs = sortedParams.reduce((acc, key) => {
-    const pair = {};
-    pair[key] = params[key];
-    const s = qs.stringify(pair);
-
-    if (typeof s === 'string' && s.length > 0) {
-      return acc.concat([s]);
-    } else {
-      return acc;
-    }
-  }, []);
-
-  return qsPairs.join('&');
 }
