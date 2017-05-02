@@ -2,12 +2,12 @@
 
 const test = require('tape');
 
-const prepareCts = require('../src/prepare-cts.js');
+const prepareSpaceGraph = require('../src/prepare-space-graph.js');
 
 const testCt = fields => ({sys: {id: 'ctid'}, name: 'test', fields});
 
-test('prepare-cts: names', function (t) {
-  const [p1, p2] = prepareCts([
+test('prepare-space-graph: names', function (t) {
+  const [p1, p2] = prepareSpaceGraph([
     {sys: {id: 'ctid'}, name: 'test entity', fields: []},
     {sys: {id: 'ctid2'}, name: 'BlogPost!', fields: []}
   ]);
@@ -33,13 +33,13 @@ test('prepare-cts: names', function (t) {
   t.end();
 });
 
-test('prepare-cts: conflicing names', function (t) {
-  const prepare1 = () => prepareCts([
+test('prepare-space-graph: conflicing names', function (t) {
+  const prepare1 = () => prepareSpaceGraph([
     {sys: {id: 'ctid1'}, name: 'Test-', fields: []},
     {sys: {id: 'ctid2'}, name: 'Test_', fields: []}
   ]);
 
-  const prepare2 = () => prepareCts([
+  const prepare2 = () => prepareSpaceGraph([
     {sys: {id: 'ctid1'}, name: 'Test1', fields: []},
     {sys: {id: 'ctid2'}, name: 'Test2', fields: []}
   ]);
@@ -50,8 +50,8 @@ test('prepare-cts: conflicing names', function (t) {
   t.end();
 });
 
-test('prepare-cts: skipping omitted fields', function (t) {
-  const [p] = prepareCts([testCt([
+test('prepare-space-graph: skipping omitted fields', function (t) {
+  const [p] = prepareSpaceGraph([testCt([
     {id: 'f1', type: 'Text', omitted: false},
     {id: 'f2', type: 'Text', omitted: true},
     {id: 'f3', type: 'Text'}
@@ -63,17 +63,17 @@ test('prepare-cts: skipping omitted fields', function (t) {
   t.end();
 });
 
-test('prepare-cts: throws on unsupported field names', function (t) {
+test('prepare-space-graph: throws on unsupported field names', function (t) {
   ['sys', '_backrefs'].forEach(id => {
     const ct = testCt([{id, type: 'Text'}]);
-    t.throws(() => prepareCts([ct]), /are unsupported/);
+    t.throws(() => prepareSpaceGraph([ct]), /are unsupported/);
   });
 
   t.end();
 });
 
-test('prepare-cts: array field types', function (t) {
-  const [p] = prepareCts([testCt([
+test('prepare-space-graph: array field types', function (t) {
+  const [p] = prepareSpaceGraph([testCt([
     {id: 'f1', type: 'Array', items: {type: 'Symbol'}},
     {id: 'f2', type: 'Array', items: {type: 'Link', linkType: 'Entry'}},
     {id: 'f3', type: 'Array', items: {type: 'Link', linkType: 'Asset'}}
@@ -87,14 +87,14 @@ test('prepare-cts: array field types', function (t) {
 
   [{type: 'x'}, {type: 'Link'}, {type: 'Link', linkType: 'x'}].forEach(items => {
     const ct = testCt([{id: 'fid', type: 'Array', items}]);
-    t.throws(() => prepareCts([ct]), /type "Array"/);
+    t.throws(() => prepareSpaceGraph([ct]), /type "Array"/);
   });
 
   t.end();
 });
 
-test('prepare-cts: link field types', function (t) {
-  const [p] = prepareCts([testCt([
+test('prepare-space-graph: link field types', function (t) {
+  const [p] = prepareSpaceGraph([testCt([
     {id: 'f1', type: 'Link', linkType: 'Entry'},
     {id: 'f2', type: 'Link', linkType: 'Asset'}
   ])]);
@@ -103,13 +103,13 @@ test('prepare-cts: link field types', function (t) {
 
   ['x', null, undefined].forEach(linkType => {
     const ct = testCt([{id: 'fid', type: 'Link', linkType}]);
-    t.throws(() => prepareCts([ct]), /type "Link"/);
+    t.throws(() => prepareSpaceGraph([ct]), /type "Link"/);
   });
 
   t.end();
 });
 
-test('prepare-cts: simple field types', function (t) {
+test('prepare-space-graph: simple field types', function (t) {
   const mapping = {
     Symbol: 'String',
     Text: 'String',
@@ -127,19 +127,19 @@ test('prepare-cts: simple field types', function (t) {
     return acc.concat([{id: `f${i}`, type}]);
   }, []);
 
-  const [p] = prepareCts([testCt(fields)]);
+  const [p] = prepareSpaceGraph([testCt(fields)]);
 
   t.deepEqual(p.fields.map(f => f.type), values);
 
   ['x', null, undefined].forEach(type => {
     const ct = testCt([{id: 'fid', type}]);
-    t.throws(() => prepareCts([ct]), /Unknown field type/);
+    t.throws(() => prepareSpaceGraph([ct]), /Unknown field type/);
   });
 
   t.end();
 });
 
-test('prepare-cts: finding linked content types', function (t) {
+test('prepare-space-graph: finding linked content types', function (t) {
   const tests = [
     undefined,
     [],
@@ -154,7 +154,7 @@ test('prepare-cts: finding linked content types', function (t) {
     ]);
   }, []);
 
-  const [p] = prepareCts([testCt(fields)]);
+  const [p] = prepareSpaceGraph([testCt(fields)]);
   const linkedCts = p.fields.map(f => f.linkedCt).filter(id => typeof id === 'string');
 
   t.deepEqual(linkedCts, ['baz', 'baz']);
@@ -162,7 +162,7 @@ test('prepare-cts: finding linked content types', function (t) {
   t.end();
 });
 
-test('prepare-cts: adding backreferences', function (t) {
+test('prepare-space-graph: adding backreferences', function (t) {
   const cts = [
     {
       sys: {id: 'post'},
@@ -178,7 +178,7 @@ test('prepare-cts: adding backreferences', function (t) {
     }
   ];
 
-  const [pPost, pAuthor] = prepareCts(cts);
+  const [pPost, pAuthor] = prepareSpaceGraph(cts);
   t.equal(pPost._backrefs, undefined);
   t.deepEqual(pAuthor.backrefs, [{
     ctId: 'post',

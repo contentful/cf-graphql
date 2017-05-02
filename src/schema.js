@@ -15,19 +15,19 @@ const createBackrefsType = require('./backref-types.js');
 
 module.exports = createSchema;
 
-function createSchema (cts) {
+function createSchema (spaceGraph) {
   const QueryType = new GraphQLObjectType({
     name: 'Query',
-    fields: queryFields(cts)
+    fields: queryFields(spaceGraph)
   });
 
   return new GraphQLSchema({query: QueryType});
 }
 
-function queryFields (cts) {
+function queryFields (spaceGraph) {
   const ctIdToType = {};
 
-  return cts.reduce((acc, ct) => {
+  return spaceGraph.reduce((acc, ct) => {
     const defaultFieldsThunk = () => {
       const fields = {sys: {type: EntrySysType}};
       if (ct.backrefs) {

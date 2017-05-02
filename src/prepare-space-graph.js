@@ -32,10 +32,10 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 module.exports = prepareSpaceGraph;
 
 function prepareSpaceGraph (cts) {
-  return addBackrefs(enrichCts(cts));
+  return addBackrefs(createSpaceGraph(cts));
 }
 
-function enrichCts (cts) {
+function createSpaceGraph (cts) {
   const accumulatedNames = {};
 
   return cts.map(ct => ({
@@ -128,13 +128,13 @@ function linkedCt (f) {
   }
 }
 
-function addBackrefs (cts) {
-  const byId = cts.reduce((acc, ct) => {
+function addBackrefs (spaceGraph) {
+  const byId = spaceGraph.reduce((acc, ct) => {
     acc[ct.id] = ct;
     return acc;
   }, {});
 
-  cts.forEach(ct => ct.fields.forEach(field => {
+  spaceGraph.forEach(ct => ct.fields.forEach(field => {
     if (field.linkedCt && byId[field.linkedCt]) {
       const linked = byId[field.linkedCt];
       linked.backrefs = linked.backrefs || [];
@@ -146,5 +146,5 @@ function addBackrefs (cts) {
     }
   }));
 
-  return cts;
+  return spaceGraph;
 }
