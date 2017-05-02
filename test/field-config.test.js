@@ -11,7 +11,7 @@ const {
   getNamedType
 } = require('graphql');
 
-const {AssetType, EntryType} = require('../src/base-types.js');
+const {AssetType, EntryType, LocationType} = require('../src/base-types.js');
 const map = require('../src/field-config.js');
 
 const entities = {
@@ -58,6 +58,19 @@ test('field-config: object', function (t) {
   const resolved = config.resolve({fields: {test: value}});
   t.equal(typeof resolved, 'string');
   t.deepEqual(JSON.parse(resolved), value);
+
+  t.end();
+});
+
+test('field-config: location', function (t) {
+  const config = map.Location({id: 'test'});
+  t.equal(config.type, LocationType);
+  t.equal(config.resolve({fields: {}}), undefined);
+
+  const location = {lon: 11.1, lat: -22.2};
+  const resolved = config.resolve({fields: {test: location}});
+  t.equal(typeof resolved, 'object');
+  t.deepEqual(resolved, {lon: 11.1, lat: -22.2});
 
   t.end();
 });

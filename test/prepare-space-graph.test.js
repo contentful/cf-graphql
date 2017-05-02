@@ -117,7 +117,7 @@ test('prepare-space-graph: simple field types', function (t) {
     Integer: 'Int',
     Date: 'String',
     Boolean: 'Bool',
-    Location: 'Object',
+    Location: 'Location',
     Object: 'Object'
   };
 

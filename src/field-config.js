@@ -10,16 +10,16 @@ const {
   GraphQLList
 } = require('graphql');
 
-const {AssetType, EntryType} = require('./base-types.js');
+const {AssetType, EntryType, LocationType} = require('./base-types.js');
 
 const NOTHING = {};
 
-// TODO: handle "Location" and "Date(time)"
 module.exports = {
   String: field => createFieldConfig(GraphQLString, field),
   Int: field => createFieldConfig(GraphQLInt, field),
   Float: field => createFieldConfig(GraphQLFloat, field),
   Bool: field => createFieldConfig(GraphQLBoolean, field),
+  Location: field => createFieldConfig(LocationType, field),
   Object: createObjectFieldConfig,
   'Array<String>': createArrayOfStringsFieldConfig,
   'Link<Asset>': createAssetFieldConfig,
