@@ -1,36 +1,54 @@
 'use strict';
 
-// defaults, can be overridden with env variables
-const PORT = 4000;
-const SPACE_ID = 'f9gzm4p998uo';
-const CDA_TOKEN = '7563852245db5888c3c7e13afb90686b8b921ef3271d9e8cf28f468e5d122889';
+// requiring a local module; outside of this repo you should require "cf-graphql"
+const cfGraphql = require('.');
 
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 
-// requiring a local module; outside of this repo require "cf-graphql"
-const cfGraphql = require('.');
+const port = process.env.PORT || 4000;
+const spaceId = process.env.SPACE_ID;
+const cdaToken = process.env.CDA_TOKEN;
+const cmaToken = process.env.CMA_TOKEN;
 
-const port = process.env.PORT || PORT;
-const spaceId = process.env.SPACE_ID  || SPACE_ID;
-const cdaToken = process.env.CDA_TOKEN || CDA_TOKEN;
+if (spaceId && cdaToken && cmaToken) {
+  console.log('Space ID, CDA token and CMA token provided.');
+  console.log(`Fetching space (${spaceId}) content types to create a space graph.`);
+  useProvidedSpace();
+} else {
+  console.log('Using a demo space.');
+  console.log('You can provide env vars (see README.md) to use your own space.');
+  useDemoSpace();
+}
 
-const client = cfGraphql.createClient({spaceId, cdaToken});
+// this function implements a flow you could use in your application:
+// 1. fetch content types
+// 2. prepare a space graph
+// 3. create a schema out of the space graph
+// 4. run a server
+function useProvidedSpace () {
+  const client = cfGraphql.createClient({spaceId, cdaToken, cmaToken});
 
-console.log(`Preparing a schema for a Contentful space: ${spaceId}`);
+  client.getContentTypes()
+  .then(cfGraphql.prepareSpaceGraph)
+  .then(spaceGraph => {
+    const names = spaceGraph.map(ct => ct.names.type).join(', ');
+    console.log(`Contentful content types prepared: ${names}`);
+    return spaceGraph;
+  })
+  .then(cfGraphql.createSchema)
+  .then(schema => startServer(client, schema))
+  .catch(fail);
+}
 
-client.getContentTypes()
-.then(cfGraphql.prepareCts)
-.then(spaceContentTypes => {
-  const names = spaceContentTypes.map(ct => ct.names.type).join(', ');
-  console.log(`Contentful content types prepared: ${names}`);
-  return spaceContentTypes;
-})
-.then(cfGraphql.createSchema)
-.then(startServer)
-.catch(fail);
+// this function is being run if you don't provide credentials to your own space
+function useDemoSpace () {
+  // const SPACE_ID = 'f9gzm4p998uo';
+  // const CDA_TOKEN = '7563852245db5888c3c7e13afb90686b8b921ef3271d9e8cf28f468e5d122889';
+  throw new Error('Demo not implemented yet.');
+}
 
-function startServer (schema) {
+function startServer (client, schema) {
   const app = express();
   const ui = cfGraphql.createUI(`http://localhost:${port}/graphql`);
 
@@ -44,6 +62,8 @@ function startServer (schema) {
       context: {entryLoader},
       schema,
       graphiql: false,
+      // timeline extension and detailed errors are nice for development, but
+      // most likely you want to skip them in your production setup
       extensions: () => ({
         time: Date.now()-start,
         timeline: entryLoader.getTimeline().map(httpCall => {
