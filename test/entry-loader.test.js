@@ -48,3 +48,30 @@ test('entry-loader: getting many entries', function (t) {
     DEFAULT_ITEMS[0], undefined, DEFAULT_ITEMS[1]
   ]));
 });
+
+test('entry-loader: getting all entries of a content type', function (t) {
+  t.plan(7);
+  const httpStub = prepareHttpStub();
+  const loader = createEntryLoader(httpStub);
+
+  const ids = Array.apply(null, {length: 3001}).map((_, i) => `e${i+1}`);
+  const entries = ids.map(id => ({sys: {id}}));
+
+  // the last slice checks if we remove duplicates
+  [[0, 1000], [1000, 2000], [2000, 3000], [2999]].forEach((slice, n) => {
+    const items = entries.slice.apply(entries, slice);
+    httpStub.get.onCall(n).resolves({total: 3001, items});
+  });
+
+  loader.queryAll('ctid')
+  .then(items => {
+    const callParams = n => httpStub.get.getCall(n).args[1];
+    const pageParams = n => ({limit: callParams(n).limit, skip: callParams(n).skip});
+
+    [0, 1, 2, 3].forEach(n => t.deepEqual(pageParams(n), {limit: 1000, skip: n*1000}));
+    t.equal(httpStub.get.callCount, 4);
+
+    t.equal(items.length, 3001);
+    t.deepEqual(items.map(i => i.sys.id).sort(), ids.sort());
+  });
+});

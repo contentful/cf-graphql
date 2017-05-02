@@ -119,12 +119,21 @@ function isEntityType (x) {
 
 function linkedCt (f) {
   const prop = 'linkContentType';
-  const vs = _get(f, ['validations'], _get(f, ['items', 'validations'], []));
-  const v = vs.find(v => Array.isArray(v[prop]) && v[prop].length === 1);
-  const linkedCt = v && v[prop][0];
+  const validation = getValidations(f).find(v => {
+    return Array.isArray(v[prop]) && v[prop].length === 1;
+  });
+  const linkedCt = validation && validation[prop][0];
 
   if (linkedCt) {
     return linkedCt;
+  }
+}
+
+function getValidations (f) {
+  if (f.type === 'Array') {
+    return _get(f, ['items', 'validations'], []);
+  } else {
+    return _get(f, ['validations'], []);
   }
 }
 

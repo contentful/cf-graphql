@@ -162,6 +162,16 @@ test('prepare-space-graph: finding linked content types', function (t) {
   t.end();
 });
 
+test('prepare-space-graph: mixing field and items validations', function (t) {
+  const items = {type: 'Link', linkType: 'Entry', validations: [{linkContentType: ['ctid']}]};
+  const fields = [{id: 'fid', type: 'Array', validations: [], items}];
+  const [p] = prepareSpaceGraph([testCt(fields)]);
+
+  t.equal(p.fields[0].linkedCt, 'ctid');
+
+  t.end();
+});
+
 test('prepare-space-graph: adding backreferences', function (t) {
   const cts = [
     {

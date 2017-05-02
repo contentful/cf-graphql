@@ -8,24 +8,22 @@ module.exports = createBackrefsType;
 function createBackrefsType (ct, ctIdToType) {
   return new GraphQLObjectType({
     name: ct.names.backrefsType,
-    fields: ct.backrefs.reduce((acc, br) => {
-      const Type = ctIdToType[br.ctId];
+    fields: ct.backrefs.reduce((acc, backref) => {
+      const Type = ctIdToType[backref.ctId];
       if (Type) {
-        acc[br.backrefFieldName] = createBackrefFieldConfig(br, Type);
+        acc[backref.backrefFieldName] = createBackrefFieldConfig(backref, Type);
       }
       return acc;
     }, {})
   });
 }
 
-function createBackrefFieldConfig (br, Type) {
+function createBackrefFieldConfig (backref, Type) {
   return {
     type: new GraphQLList(Type),
     resolve: (entryId, _, ctx) => {
-      // TODO: should fetch all entries before filtering
-      // multiple requests may be needed, 1000 is the maximal value of limit
-      return ctx.entryLoader.query(br.ctId, 'limit=1000')
-      .then(entries => filterEntries(entries, br.fieldId, entryId));
+      return ctx.entryLoader.queryAll(backref.ctId)
+      .then(entries => filterEntries(entries, backref.fieldId, entryId));
     }
   };
 }
