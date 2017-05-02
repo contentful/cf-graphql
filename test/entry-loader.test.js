@@ -49,6 +49,25 @@ test('entry-loader: getting many entries', function (t) {
   ]));
 });
 
+test('entry-loader: querying entries', function (t) {
+  t.plan(2);
+  const httpStub = prepareHttpStub();
+  const loader = createEntryLoader(httpStub);
+
+  loader.query('ctid', 'fields.someNum=123&fields.test[exists]=true')
+  .then(() => {
+    t.equal(httpStub.get.callCount, 1);
+    t.deepEqual(httpStub.get.lastCall.args, ['/entries', {
+      skip: 0,
+      limit: 100,
+      include: 1,
+      content_type: 'ctid',
+      'fields.someNum': '123',
+      'fields.test[exists]': 'true'
+    }]);
+  });
+});
+
 test('entry-loader: getting all entries of a content type', function (t) {
   t.plan(7);
   const httpStub = prepareHttpStub();
@@ -74,4 +93,40 @@ test('entry-loader: getting all entries of a content type', function (t) {
     t.equal(items.length, 3001);
     t.deepEqual(items.map(i => i.sys.id).sort(), ids.sort());
   });
+});
+
+test('entry-loader: including assets', function (t) {
+  t.plan(5);
+  const httpStub = prepareHttpStub();
+  const loader = createEntryLoader(httpStub);
+
+  const includesValues = [
+    {Asset: [{sys: {id: 'a1'}}]},
+    undefined,
+    {Asset: [{sys: {id: 'a2'}}, {sys: {id: 'a3'}}]}
+  ];
+
+  includesValues.forEach((includes, n) => {
+    httpStub.get.onCall(n).resolves({items: [], includes});
+  });
+
+  Promise.all([loader.get('e1'), loader.query('ctid'), loader.queryAll('ctid2')])
+  .then(() => {
+    t.equal(httpStub.get.callCount, 3);
+    ['a1', 'a2', 'a3'].forEach(id => {
+      t.deepEqual(loader.getIncludedAsset(id), {sys: {id}});
+    });
+    t.equal(loader.getIncludedAsset('e1', undefined));
+  });
+});
+
+test('entry-loader: timeline', function (t) {
+  const httpStub = prepareHttpStub();
+  const tl = {};
+  httpStub.timeline = tl;
+  const loader = createEntryLoader(httpStub);
+
+  t.equal(loader.getTimeline(), tl);
+
+  t.end();
 });
