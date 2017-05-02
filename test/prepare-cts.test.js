@@ -33,6 +33,23 @@ test('prepare-cts: names', function (t) {
   t.end();
 });
 
+test('prepare-cts: conflicing names', function (t) {
+  const prepare1 = () => prepareCts([
+    {sys: {id: 'ctid1'}, name: 'Test-', fields: []},
+    {sys: {id: 'ctid2'}, name: 'Test_', fields: []}
+  ]);
+
+  const prepare2 = () => prepareCts([
+    {sys: {id: 'ctid1'}, name: 'Test1', fields: []},
+    {sys: {id: 'ctid2'}, name: 'Test2', fields: []}
+  ]);
+
+  t.throws(prepare1, /Conflicing name: "test"\. Type of name: "field"/);
+  t.doesNotThrow(prepare2);
+
+  t.end();
+});
+
 test('prepare-cts: skipping omitted fields', function (t) {
   const [p] = prepareCts([testCt([
     {id: 'f1', type: 'Text', omitted: false},

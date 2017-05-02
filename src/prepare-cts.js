@@ -29,29 +29,47 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
   Object: 'Object'
 };
 
-module.exports = cts => addBackrefs(prepareCts(cts));
+module.exports = prepareSpaceGraph;
 
-function prepareCts (cts) {
+function prepareSpaceGraph (cts) {
+  return addBackrefs(enrichCts(cts));
+}
+
+function enrichCts (cts) {
+  const accumulatedNames = {};
+
   return cts.map(ct => ({
     id: ct.sys.id,
-    // TODO: check for conflicts
-    names: names(ct.name),
+    names: names(ct.name, accumulatedNames),
     fields: ct.fields.reduce((acc, f) => {
       return f.omitted ? acc : acc.concat([field(f)]);
     }, [])
   }));
 }
 
-function names (name) {
+function names (name, accumulatedNames) {
   const fieldName = camelCase(name);
   const typeName = upperFirst(fieldName);
 
-  return {
+  return checkForConflicts({
     field: fieldName,
     collectionField: pluralize(fieldName),
     type: typeName,
     backrefsType: `${typeName}Backrefs`
-  };
+  }, accumulatedNames);
+}
+
+function checkForConflicts (names, accumulatedNames) {
+  Object.keys(names).forEach(key => {
+    const value = names[key];
+    accumulatedNames[key] = accumulatedNames[key] || [];
+    if (accumulatedNames[key].includes(value)) {
+      throw new Error(`Conflicing name: "${value}". Type of name: "${key}"`);
+    }
+    accumulatedNames[key].push(value);
+  });
+
+  return names;
 }
 
 function field (f) {
