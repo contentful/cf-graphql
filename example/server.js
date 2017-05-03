@@ -43,9 +43,10 @@ function useProvidedSpace () {
 
 // this function is being run if you don't provide credentials to your own space
 function useDemoSpace () {
-  // const SPACE_ID = 'f9gzm4p998uo';
-  // const CDA_TOKEN = '7563852245db5888c3c7e13afb90686b8b921ef3271d9e8cf28f468e5d122889';
-  throw new Error('Demo not implemented yet');
+  const {spaceId, cdaToken, spaceGraph} = require('./demo-data.json');
+  const client = cfGraphql.createClient({spaceId, cdaToken});
+  const schema = cfGraphql.createSchema(spaceGraph);
+  startServer(client, schema);
 }
 
 function startServer (client, schema) {

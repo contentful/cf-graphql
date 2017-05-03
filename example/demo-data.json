@@ -1,0 +1,115 @@
+{
+  "spaceId": "d0nux3lw6z7l",
+  "cdaToken": "3622a4162d173f335f465f286fd5aac21888ba66744a76a24708c0a4f98999ef",
+  "spaceGraph": [
+    {
+      "id": "5KMiN6YPvi42icqAUQMCQe",
+      "names": {
+        "field": "category",
+        "collectionField": "categories",
+        "type": "Category",
+        "backrefsType": "CategoryBackrefs"
+      },
+      "fields": [
+        {
+          "id": "title",
+          "type": "String"
+        },
+        {
+          "id": "icon",
+          "type": "Link<Asset>"
+        }
+      ],
+      "backrefs": [
+        {
+          "ctId": "2wKn6yEnZewu2SCCkus4as",
+          "fieldId": "category",
+          "backrefFieldName": "posts__via__category"
+        }
+      ]
+    },
+    {
+      "id": "1kUEViTN4EmGiEaaeC6ouY",
+      "names": {
+        "field": "author",
+        "collectionField": "authors",
+        "type": "Author",
+        "backrefsType": "AuthorBackrefs"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "type": "String"
+        },
+        {
+          "id": "website",
+          "type": "String"
+        },
+        {
+          "id": "profilePhoto",
+          "type": "Link<Asset>"
+        },
+        {
+          "id": "biography",
+          "type": "String"
+        }
+      ],
+      "backrefs": [
+        {
+          "ctId": "2wKn6yEnZewu2SCCkus4as",
+          "fieldId": "author",
+          "backrefFieldName": "posts__via__author"
+        }
+      ]
+    },
+    {
+      "id": "2wKn6yEnZewu2SCCkus4as",
+      "names": {
+        "field": "post",
+        "collectionField": "posts",
+        "type": "Post",
+        "backrefsType": "PostBackrefs"
+      },
+      "fields": [
+        {
+          "id": "title",
+          "type": "String"
+        },
+        {
+          "id": "slug",
+          "type": "String"
+        },
+        {
+          "id": "author",
+          "type": "Array<Link<Entry>>",
+          "linkedCt": "1kUEViTN4EmGiEaaeC6ouY"
+        },
+        {
+          "id": "body",
+          "type": "String"
+        },
+        {
+          "id": "category",
+          "type": "Array<Link<Entry>>",
+          "linkedCt": "5KMiN6YPvi42icqAUQMCQe"
+        },
+        {
+          "id": "tags",
+          "type": "Array<String>"
+        },
+        {
+          "id": "featuredImage",
+          "type": "Link<Asset>"
+        },
+        {
+          "id": "date",
+          "type": "String"
+        },
+        {
+          "id": "comments",
+          "type": "Bool"
+        }
+      ]
+    }
+  ]
+}
