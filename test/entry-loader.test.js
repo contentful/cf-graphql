@@ -91,7 +91,7 @@ test('entry-loader: getting all entries of a content type', function (t) {
     t.equal(httpStub.get.callCount, 4);
 
     t.equal(items.length, 3001);
-    t.deepEqual(items.map(i => i.sys.id).sort(), ids.sort());
+    t.deepEqual(items.map(i => i.sys.id), ids);
   });
 });
 
