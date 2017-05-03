@@ -23,6 +23,9 @@ npm install --save cf-graphql
 
 ## Demo
 
+We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query Contentful's "Blog" space template there.
+
+
 ### Run it locally
 
 This repository contains a demo project. To run it, clone the repository, install dependencies and start a server:
@@ -35,7 +38,7 @@ npm install
 npm start
 ```
 
-Navigate to <http://localhost:4000> to access an IDE (GraphiQL). You can query my demo space there. Please refer the [Querying](#querying) section for more details.
+Navigate to <http://localhost:4000> to access an IDE (GraphiQL). You can query a demo space there. Please refer the [Querying](#querying) section for more details.
 
 To use your own Contentful space with the demo, you have to provide:
 
