@@ -1,0 +1,12 @@
+{
+  "name": "cf-graphql-demo",
+  "private": "true",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "devDependencies": {
+    "cf-graphql": "^0.3.0",
+    "express": "^4.15.2",
+    "express-graphql": "^0.6.4"
+  }
+}

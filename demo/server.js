@@ -1,8 +1,6 @@
 'use strict';
 
-// requiring a local module; outside of this repo you should require "cf-graphql"
-const cfGraphql = require('..');
-
+const cfGraphql = require('cf-graphql');
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 
