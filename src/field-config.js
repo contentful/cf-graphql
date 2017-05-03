@@ -14,6 +14,10 @@ const {AssetType, EntryType, LocationType} = require('./base-types.js');
 
 const NOTHING = {};
 
+const is = type => entity => typeof entity === type;
+const isString = is('string');
+const isObject = is('object');
+
 module.exports = {
   String: field => createFieldConfig(GraphQLString, field),
   Int: field => createFieldConfig(GraphQLInt, field),
@@ -55,18 +59,24 @@ function createAssetFieldConfig (field) {
 function createArrayOfAssetsFieldConfig (field) {
   return createFieldConfig(new GraphQLList(AssetType), field, (links, ctx) => {
     if (Array.isArray(links)) {
-      return links.map(link => getAsset(link, ctx)).filter(is('object'));
+      return links.map(link => getAsset(link, ctx)).filter(isObject);
     }
   });
 }
 
 function getAsset (link, ctx) {
-  return ctx.entryLoader.getIncludedAsset(getLinkedId(link));
+  const linkedId = getLinkedId(link);
+  if (isString(linkedId)) {
+    return ctx.entryLoader.getIncludedAsset(linkedId);
+  }
 }
 
 function createEntryFieldConfig (field, ctIdToType) {
   return createFieldConfig(typeFor(field, ctIdToType), field, (link, ctx) => {
-    return ctx.entryLoader.get(getLinkedId(link), field.linkedCt);
+    const linkedId = getLinkedId(link);
+    if (isString(linkedId)) {
+      return ctx.entryLoader.get(linkedId, field.linkedCt);
+    }
   });
 }
 
@@ -75,8 +85,8 @@ function createArrayOfEntriesFieldConfig (field, ctIdToType) {
 
   return createFieldConfig(Type, field, (links, ctx) => {
     if (Array.isArray(links)) {
-      const ids = links.map(getLinkedId).filter(is('string'));
-      return ctx.entryLoader.getMany(ids).then(coll => coll.filter(is('object')));
+      const ids = links.map(getLinkedId).filter(isString);
+      return ctx.entryLoader.getMany(ids).then(coll => coll.filter(isObject));
     }
   });
 }
@@ -91,8 +101,4 @@ function typeFor ({linkedCt}, ctIdToType = {}) {
   } else {
     return EntryType;
   }
-}
-
-function is (type) {
-  return entity => typeof entity === type;
 }
