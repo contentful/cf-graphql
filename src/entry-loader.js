@@ -5,7 +5,9 @@ const chunk = require('lodash.chunk');
 const qs = require('querystring');
 const DataLoader = require('dataloader');
 
+const INCLUDE_DEPTH = 1;
 const CHUNK_SIZE = 100;
+const MAX_LIMIT = 1000;
 
 module.exports = createEntryLoader;
 
@@ -17,16 +19,19 @@ function createEntryLoader (http) {
     get: getOne,
     getMany: loader.loadMany.bind(loader),
     query,
+    queryAll,
     getIncludedAsset: id => assets[id],
     getTimeline: () => http.timeline
   };
 
   function load (ids) {
+    // we need to chunk IDs and fire multiple requests so we don't produce URLs
+    // that are too long (for the server to handle)
     const requests = chunk(ids, CHUNK_SIZE)
     .map(ids => http.get('/entries', {
       limit: CHUNK_SIZE,
       skip: 0,
-      include: 1,
+      include: INCLUDE_DEPTH,
       'sys.id[in]': ids.join(',')
     }));
 
@@ -55,11 +60,37 @@ function createEntryLoader (http) {
     const params = Object.assign({
       limit: 100,
       skip: 0,
-      include: 1,
+      include: INCLUDE_DEPTH,
       content_type: ctId
     }, qs.parse(q || ''));
 
     return http.get('/entries', params).then(prime);
+  }
+
+  function queryAll (ctId) {
+    const paramsFor = page => ({
+      limit: MAX_LIMIT,
+      skip: page*MAX_LIMIT,
+      include: INCLUDE_DEPTH,
+      content_type: ctId
+    });
+
+    return http.get('/entries', paramsFor(0))
+    .then(firstResponse => {
+      const length = Math.ceil(firstResponse.total/MAX_LIMIT)-1;
+      const pages = Array.apply(null, {length}).map((_, i) => i+1);
+      const requests = pages.map(page => http.get('/entries', paramsFor(page)));
+      return Promise.all([Promise.resolve(firstResponse)].concat(requests));
+    })
+    .then(responses => responses.reduce((acc, res) => {
+      return prime(res).reduce((acc, item) => {
+        if (!acc.some(e => e.sys.id === item.sys.id)) {
+          return acc.concat([item]);
+        } else {
+          return acc;
+        }
+      }, acc);
+    }, []));
   }
 
   function prime (res) {

@@ -3,7 +3,7 @@
 const test = require('tape');
 const {graphql, GraphQLSchema, GraphQLObjectType} = require('graphql');
 
-const {AssetType, EntryType, EntrySysType} = require('../src/base-types.js');
+const {AssetType, EntryType, EntrySysType, LocationType} = require('../src/base-types.js');
 
 test('base-types: asset', function (t) {
   const createSchema = val => new GraphQLSchema({
@@ -123,4 +123,29 @@ test('base-types: entry', function (t) {
   });
 
   t.end();
+});
+
+test('base-types: location', function (t) {
+  t.plan(2);
+
+  const schema = new GraphQLSchema({
+    query: new GraphQLObjectType({
+      name: 'Query',
+      fields: {
+        test: {
+          type: LocationType,
+          resolve: () => ({lon: 11.1, lat: -22.2})
+        }
+      }
+    })
+  });
+
+  graphql(schema, '{ test { lat lon } }')
+  .then(res => {
+    t.deepEqual(res.data.test, {
+      lat: -22.2,
+      lon: 11.1
+    });
+    t.equal(res.errors, undefined);
+  });
 });

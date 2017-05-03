@@ -25,33 +25,51 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
   Integer: 'Int',
   Date: 'String',
   Boolean: 'Bool',
-  Location: 'Object',
+  Location: 'Location',
   Object: 'Object'
 };
 
-module.exports = cts => addBackrefs(prepareCts(cts));
+module.exports = prepareSpaceGraph;
 
-function prepareCts (cts) {
+function prepareSpaceGraph (cts) {
+  return addBackrefs(createSpaceGraph(cts));
+}
+
+function createSpaceGraph (cts) {
+  const accumulatedNames = {};
+
   return cts.map(ct => ({
     id: ct.sys.id,
-    // TODO: check for conflicts
-    names: names(ct.name),
+    names: names(ct.name, accumulatedNames),
     fields: ct.fields.reduce((acc, f) => {
       return f.omitted ? acc : acc.concat([field(f)]);
     }, [])
   }));
 }
 
-function names (name) {
+function names (name, accumulatedNames) {
   const fieldName = camelCase(name);
   const typeName = upperFirst(fieldName);
 
-  return {
+  return checkForConflicts({
     field: fieldName,
     collectionField: pluralize(fieldName),
     type: typeName,
     backrefsType: `${typeName}Backrefs`
-  };
+  }, accumulatedNames);
+}
+
+function checkForConflicts (names, accumulatedNames) {
+  Object.keys(names).forEach(key => {
+    const value = names[key];
+    accumulatedNames[key] = accumulatedNames[key] || [];
+    if (accumulatedNames[key].includes(value)) {
+      throw new Error(`Conflicing name: "${value}". Type of name: "${key}"`);
+    }
+    accumulatedNames[key].push(value);
+  });
+
+  return names;
 }
 
 function field (f) {
@@ -101,22 +119,31 @@ function isEntityType (x) {
 
 function linkedCt (f) {
   const prop = 'linkContentType';
-  const vs = _get(f, ['validations'], _get(f, ['items', 'validations'], []));
-  const v = vs.find(v => Array.isArray(v[prop]) && v[prop].length === 1);
-  const linkedCt = v && v[prop][0];
+  const validation = getValidations(f).find(v => {
+    return Array.isArray(v[prop]) && v[prop].length === 1;
+  });
+  const linkedCt = validation && validation[prop][0];
 
   if (linkedCt) {
     return linkedCt;
   }
 }
 
-function addBackrefs (cts) {
-  const byId = cts.reduce((acc, ct) => {
+function getValidations (f) {
+  if (f.type === 'Array') {
+    return _get(f, ['items', 'validations'], []);
+  } else {
+    return _get(f, ['validations'], []);
+  }
+}
+
+function addBackrefs (spaceGraph) {
+  const byId = spaceGraph.reduce((acc, ct) => {
     acc[ct.id] = ct;
     return acc;
   }, {});
 
-  cts.forEach(ct => ct.fields.forEach(field => {
+  spaceGraph.forEach(ct => ct.fields.forEach(field => {
     if (field.linkedCt && byId[field.linkedCt]) {
       const linked = byId[field.linkedCt];
       linked.backrefs = linked.backrefs || [];
@@ -128,5 +155,5 @@ function addBackrefs (cts) {
     }
   }));
 
-  return cts;
+  return spaceGraph;
 }

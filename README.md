@@ -26,37 +26,45 @@ npm install --save cf-graphql
 This repository contains a project example. To run it, clone the repository and execute:
 
 ```
-nvm use
+nvm use # optional, but we prefer node v6.10
 npm install
 npm run example
 ```
 
 Navigate to <http://localhost:4000> to access an IDE (GraphiQL). You can query my demo space there. Please refer the [Querying](#querying) section for more details.
 
-To use your own Contentful space with the example, you have to provide both space ID and its CDA token:
+To use your own Contentful space with the example, you have to provide:
+
+- space ID
+- CDA token
+- CMA token
+
+Please refer the ["Authentication" section](https://www.contentful.com/developers/docs/references/authentication/) of Contentful's documentation.
+
+You can provide listed values with env variables:
 
 ```
-SPACE_ID=some-space-id CDA_TOKEN=its-cda-token npm run example
+SPACE_ID=some-space-id CDA_TOKEN=its-cda-token CMA_TOKEN=your-cma-token npm run example
 ```
 
 
 ## Usage
 
-Let's assume we've required this module with `const cfGraphql = require('cf-graphql')`. To create a schema out of your space
-you need to call `cfGraphgl.createSchema(spaceContentTypes)`.
+Let's assume we've required this module with `const cfGraphql = require('cf-graphql')`. To create a schema out of your space you need to call `cfGraphgl.createSchema(spaceGraph)`.
 
-What are `spaceContentTypes`? It is an array containing descriptions of content types of your space which additionally provide some extra pieces of information allowing the library to create a graph-like data structure. To prepare this data structure you need to fetch raw content types data from Contentful and then pass it to `cfGraphql.prepareCts(rawCts)`:
+What is `spaceGraph`? It is a graph-like data structure containing descriptions of content types of your space which additionally provide some extra pieces of information allowing the library to create a GraphQL schema. To prepare this data structure you need to fetch raw content types data from the [CMA](https://www.contentful.com/developers/docs/references/content-management-api/) and then pass it to `cfGraphql.prepareSpaceGraph(rawCts)`:
 
 ```js
 const client = cfGraphql.createClient({
   spaceId: 'some-space-id',
-  cdaToken: 'its-cda-token'
+  cdaToken: 'its-cda-token',
+  cmaToken: 'your-cma-token'
 });
 
 client.getContentTypes()
-.then(cfGraphql.prepareCts)
-.then(spaceContentTypes => {
-  // `spaceContentTypes` can be passed to `cfGraphql.createSchema`!
+.then(cfGraphql.prepareSpaceGraph)
+.then(spaceGraph => {
+  // `spaceGraph` can be passed to `cfGraphql.createSchema`!
 });
 ```
 
@@ -65,8 +73,8 @@ The last step is to use the schema with some server. A popular choice is [expres
 ```js
 // skipped: `require` calls, Express app setup, `client` creation
 
-// `spaceContentTypes` were fetched and prepared in the previous snippet:
-const schema = cfGraphql.createSchema(spaceContentTypes);
+// `spaceGraph` was fetched and prepared in the previous snippet:
+const schema = cfGraphql.createSchema(spaceGraph);
 // BTW, you shouldn't be doing it per request, once is fine
 
 app.use('/graphql', graphqlHTTP(() => ({
@@ -75,7 +83,7 @@ app.use('/graphql', graphqlHTTP(() => ({
 })));
 ```
 
-[You can see a fully-fledged example here](./example.js).
+[You can see a fully-fledged example here](./example/server.js).
 
 
 ## Querying

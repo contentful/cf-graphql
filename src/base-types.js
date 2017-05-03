@@ -7,7 +7,8 @@ const {
   GraphQLString,
   GraphQLObjectType,
   GraphQLID,
-  GraphQLInterfaceType
+  GraphQLInterfaceType,
+  GraphQLFloat
 } = require('graphql');
 
 const IDType = new GraphQLNonNull(GraphQLID);
@@ -58,13 +59,22 @@ const EntryType = new GraphQLInterfaceType({
   fields: {sys: {type: EntrySysType}}
 });
 
+const LocationType = new GraphQLObjectType({
+  name: 'Location',
+  fields: {
+    lon: {type: GraphQLFloat},
+    lat: {type: GraphQLFloat}
+  }
+});
+
 module.exports = {
   IDType,
   SysType,
   AssetSysType,
   EntrySysType,
   AssetType,
-  EntryType
+  EntryType,
+  LocationType
 };
 
 function createSysType (entityType, extraFields) {
