@@ -1,7 +1,7 @@
 'use strict';
 
 // requiring a local module; outside of this repo you should require "cf-graphql"
-const cfGraphql = require('.');
+const cfGraphql = require('..');
 
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
@@ -12,12 +12,12 @@ const cdaToken = process.env.CDA_TOKEN;
 const cmaToken = process.env.CMA_TOKEN;
 
 if (spaceId && cdaToken && cmaToken) {
-  console.log('Space ID, CDA token and CMA token provided.');
-  console.log(`Fetching space (${spaceId}) content types to create a space graph.`);
+  console.log('Space ID, CDA token and CMA token provided');
+  console.log(`Fetching space (${spaceId}) content types to create a space graph`);
   useProvidedSpace();
 } else {
-  console.log('Using a demo space.');
-  console.log('You can provide env vars (see README.md) to use your own space.');
+  console.log('Using a demo space');
+  console.log('You can provide env vars (see README.md) to use your own space');
   useDemoSpace();
 }
 
@@ -45,7 +45,7 @@ function useProvidedSpace () {
 function useDemoSpace () {
   // const SPACE_ID = 'f9gzm4p998uo';
   // const CDA_TOKEN = '7563852245db5888c3c7e13afb90686b8b921ef3271d9e8cf28f468e5d122889';
-  throw new Error('Demo not implemented yet.');
+  throw new Error('Demo not implemented yet');
 }
 
 function startServer (client, schema) {
