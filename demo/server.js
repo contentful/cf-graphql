@@ -49,9 +49,9 @@ function useDemoSpace () {
 
 function startServer (client, schema) {
   const app = express();
-  const ui = cfGraphql.createUI(`http://localhost:${port}/graphql`);
+  const {headers, statusCode, body} = cfGraphql.createUI();
 
-  app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
+  app.get('/', (_, res) => res.set(headers).status(statusCode).end(body));
 
   app.use('/graphql', graphqlHTTP(() => {
     const start = Date.now();

@@ -2,11 +2,24 @@
   "name": "cf-graphql-demo",
   "private": "true",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "deploy-now": "now -e SPACE_ID -e CDA_TOKEN -e CMA_TOKEN",
+    "deploy-demo-now": "now"
   },
-  "devDependencies": {
+  "now": {
+    "engines": {
+      "node": "^6.0.0"
+    },
+    "env": {
+      "NODE_ENV": "production"
+    }
+  },
+  "dependencies": {
     "cf-graphql": "^0.3.0",
     "express": "^4.15.2",
     "express-graphql": "^0.6.4"
+  },
+  "devDependencies": {
+    "now": "^5.1.2"
   }
 }
