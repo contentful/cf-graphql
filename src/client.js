@@ -29,5 +29,10 @@ function createContentfulClient (api, config) {
   const token = api === CDA ? config.cdaToken : config.cmaToken;
   const headers = {Authorization: `Bearer ${token}`};
 
-  return createHttpClient({base, headers});
+  const defaultParams = {};
+  if (api === CDA && config.locale) {
+    defaultParams.locale = config.locale;
+  }
+
+  return createHttpClient({base, headers, defaultParams});
 }

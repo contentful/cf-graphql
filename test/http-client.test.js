@@ -7,14 +7,18 @@ const proxyquire = require('proxyquire').noCallThru();
 const stubs = {'node-fetch': sinon.stub()};
 const createClient = proxyquire('../src/http-client.js', stubs);
 
-const prepare = val => {
+const prepare = (val, defaultParams = {}) => {
   const fetch = stubs['node-fetch'];
   fetch.reset();
   fetch.resolves(val || {status: 200, json: () => true});
 
   return {
     fetch,
-    http: createClient({base: 'http://test.com', headers: {'X-Test': 'yes'}})
+    http: createClient({
+      base: 'http://test.com',
+      headers: {'X-Test': 'yes'},
+      defaultParams
+    })
   };
 };
 
@@ -30,6 +34,21 @@ test('http-client: using base and headers', function (t) {
       'http://test.com/endpoint',
       {headers: {'X-Test': 'yes'}}
     ]);
+  });
+});
+
+test('http-client: using default params option', function (t) {
+  t.plan(3);
+  const {fetch, http} = prepare(undefined, {locale: 'de-DE'});
+
+  Promise.all([
+    http.get('/x', {content_type: 'ctid'}),
+    http.get('/y', {locale: 'x'})
+  ])
+  .then(() => {
+    t.equal(fetch.callCount, 2);
+    t.deepEqual(fetch.firstCall.args[0].split('?')[1], 'content_type=ctid&locale=de-DE');
+    t.deepEqual(fetch.lastCall.args[0].split('?')[1], 'locale=x');
   });
 });
 
