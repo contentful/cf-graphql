@@ -14,26 +14,33 @@ Generated artifacts can be used with any node-based GraphQL server. The outcome 
 
 ## First steps
 
-If you just want to see how it works, please follow the [Example](#example) section. If you want to get your hands dirty, install the package and follow the [Usage](#usage) section:
+If you just want to see how it works, please follow the [demo](#demo) section. If you want to get your hands dirty, install the package and follow the [Usage](#usage) section:
 
 ```
 npm install --save cf-graphql
 ```
 
 
-## Example
+## Demo
 
-This repository contains a project example. To run it, clone the repository and execute:
+We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query Contentful's "Blog" space template there.
+
+
+### Run it locally
+
+This repository contains a demo project. To run it, clone the repository, install dependencies and start a server:
 
 ```
+git clone git@github.com:jelz/cf-graphql.git
+cd cf-graphql/demo
 nvm use # optional, but we prefer node v6.10
 npm install
-npm run example
+npm start
 ```
 
-Navigate to <http://localhost:4000> to access an IDE (GraphiQL). You can query my demo space there. Please refer the [Querying](#querying) section for more details.
+Navigate to <http://localhost:4000> to access an IDE (GraphiQL). You can query a demo space there. Please refer the [Querying](#querying) section for more details.
 
-To use your own Contentful space with the example, you have to provide:
+To use your own Contentful space with the demo, you have to provide:
 
 - space ID
 - CDA token
@@ -44,8 +51,31 @@ Please refer the ["Authentication" section](https://www.contentful.com/developer
 You can provide listed values with env variables:
 
 ```
-SPACE_ID=some-space-id CDA_TOKEN=its-cda-token CMA_TOKEN=your-cma-token npm run example
+SPACE_ID=some-space-id CDA_TOKEN=its-cda-token CMA_TOKEN=your-cma-token npm start
 ```
+
+
+### Deploy to [Zeit's `now`](https://zeit.co/now)
+
+You can also deploy the demo with `now`. In your terminal, navigate to the `demo/` directory and run:
+
+```
+npm run deploy-demo-now
+```
+
+As soon as the deployment is done you'll have a URL of your GraphQL server copied.
+
+You can also create a deployment for your own space:
+
+```
+SPACE_ID=some-space-id CDA_TOKEN=its-cda-token CMA_TOKEN=your-cma-token npm run deploy-now
+```
+
+Please note:
+
+- when deploying a server with a demo space, the command to use is `npm run deploy-demo-now`; when using your own space, the command is `npm run deploy-now`
+- if you've never used `now` before, you'll be asked to provide your e-mail; just follow on-screen instructions
+- if you use `now`'s OSS plan (the default one), you'll be asked if you want to make your source code public; it's completely fine: all credentials are passed as env variables and are not available publicly
 
 
 ## Usage
@@ -83,7 +113,7 @@ app.use('/graphql', graphqlHTTP(() => ({
 })));
 ```
 
-[You can see a fully-fledged example here](./example/server.js).
+[You can see a fully-fledged example in the `demo/` directory](./demo/server.js).
 
 
 ## Querying

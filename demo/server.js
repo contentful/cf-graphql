@@ -1,8 +1,6 @@
 'use strict';
 
-// requiring a local module; outside of this repo you should require "cf-graphql"
-const cfGraphql = require('..');
-
+const cfGraphql = require('cf-graphql');
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 
@@ -51,9 +49,9 @@ function useDemoSpace () {
 
 function startServer (client, schema) {
   const app = express();
-  const ui = cfGraphql.createUI(`http://localhost:${port}/graphql`);
+  const {headers, statusCode, body} = cfGraphql.createUI();
 
-  app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
+  app.get('/', (_, res) => res.set(headers).status(statusCode).end(body));
 
   app.use('/graphql', graphqlHTTP(() => {
     const start = Date.now();
