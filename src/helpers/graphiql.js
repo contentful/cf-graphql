@@ -13,14 +13,15 @@ function getResponse (url) {
   };
 }
 
-function body (url) {
-  url = url || '/graphql';
+function body (opts = {}) {
+  const title = opts.title || 'GraphiQL';
+  const url = opts.url || '/graphql';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>GraphiQL</title>
+  <title>${title}</title>
   <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/graphiql/0.10.1/graphiql.min.css">
   <style>

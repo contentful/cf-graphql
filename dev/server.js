@@ -22,8 +22,8 @@ client.getContentTypes()
 })
 .then(cfGraphql.createSchema)
 .then(schema => {
-  const {headers, statusCode, body} = cfGraphql.createUI();
-  app.get('/', (_, res) => res.set(headers).status(statusCode).end(body));
+  const ui = cfGraphql.helpers.graphiql({title: 'cf-graphql demo'});
+  app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
 
   const opts = {timeline: true, detailedErrors: false};
   const ext = cfGraphql.helpers.expressGraphqlExtension(client, schema, opts);
