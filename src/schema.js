@@ -30,12 +30,9 @@ function queryFields (spaceGraph) {
   return spaceGraph.reduce((acc, ct) => {
     const defaultFieldsThunk = () => {
       const fields = {sys: {type: EntrySysType}};
-      if (ct.backrefs) {
-        const BackrefsType = createBackrefsType(ct, ctIdToType);
-        fields._backrefs = {
-          type: BackrefsType,
-          resolve: entry => entry.sys.id
-        };
+      const BackrefsType = createBackrefsType(ct, ctIdToType);
+      if (BackrefsType) {
+        fields._backrefs = {type: BackrefsType, resolve: e => e.sys.id};
       }
       return fields;
     };
