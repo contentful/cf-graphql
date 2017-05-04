@@ -2,7 +2,7 @@
 
 const test = require('tape');
 
-const index = require('../index.js');
+const index = require('..');
 
 test('index: all functions successfully imported', function (t) {
   ['createClient', 'prepareSpaceGraph', 'createSchema'].forEach(m => {

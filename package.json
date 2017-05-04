@@ -23,13 +23,13 @@
     "schema",
     "cda"
   ],
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "dev": "nodemon dev/server.js",
     "dump": "mkdirp dump && npm run dump-graph && npm run dump-schema",
     "dump-graph": "graphqlviz http://localhost:4000/graphql | dot -Tpng -o dump/graph.png",
     "dump-schema": "fetch-graphql-schema http://localhost:4000/graphql -r -o dump/schema.graphql",
-    "lint": "eslint 'index.js' 'src/**/*.js' 'test/**/*.js' 'demo/*.js' 'dev/*.js'",
+    "lint": "eslint 'src/**/*.js' 'test/**/*.js' 'demo/*.js' 'dev/*.js'",
     "test": "tape 'test/**/*.js'",
     "coverage": "istanbul cover tape 'test/**/*.js'",
     "codecov": "cat coverage/coverage.json | codecov"
