@@ -81,7 +81,7 @@ SPACE_ID=some-space-id CDA_TOKEN=its-cda-token CMA_TOKEN=your-cma-token npm star
 
 ### Deploy to [Zeit's `now`](https://zeit.co/now)
 
-To be able to deploy to [Zeit's `now`](https://zeit.co/now) you need to have an activates account. There is a free open source option available. 
+To be able to deploy to [Zeit's `now`](https://zeit.co/now) you need to have an activated account. There is a free open source option available. 
 
 You can also deploy the demo with `now`. In your terminal, navigate to the `demo/` directory and run:
 
