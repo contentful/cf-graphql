@@ -35,23 +35,43 @@ test('client: config options', function (t) {
   Promise.all([p1, p2]).then(() => {
     t.deepEqual(createHttpClientStub.firstCall.args, [{
       base: 'https://api.contentful.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CMA-TOKEN'}
+      headers: {Authorization: 'Bearer CMA-TOKEN'},
+      defaultParams: {}
     }]);
 
     t.deepEqual(createHttpClientStub.secondCall.args, [{
       base: 'https://cdn.contentful.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CDA-TOKEN'}
+      headers: {Authorization: 'Bearer CDA-TOKEN'},
+      defaultParams: {}
     }]);
 
     t.deepEqual(createHttpClientStub.thirdCall.args, [{
       base: 'http://api.altdomain.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CMA-TOKEN'}
+      headers: {Authorization: 'Bearer CMA-TOKEN'},
+      defaultParams: {}
     }]);
 
     t.deepEqual(createHttpClientStub.lastCall.args, [{
       base: 'http://cdn.altdomain.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CDA-TOKEN'}
+      headers: {Authorization: 'Bearer CDA-TOKEN'},
+      defaultParams: {}
     }]);
+  });
+});
+
+test('client: with "locale" config option', function (t) {
+  t.plan(2);
+  createHttpClientStub.reset();
+  createHttpClientStub.returns(httpStub);
+
+  const c = createClient(Object.assign({locale: 'x'}, config));
+  const defaultParams = n => createHttpClientStub.getCall(n).args[0].defaultParams;
+
+  c.createEntryLoader();
+  c.getContentTypes()
+  .then(() => {
+    t.deepEqual(defaultParams(0), {locale: 'x'});
+    t.deepEqual(defaultParams(1), {});
   });
 });
 

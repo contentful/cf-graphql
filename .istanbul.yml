@@ -1,4 +1,5 @@
 instrumentation:
   include-all-sources: true
   excludes:
-    - demo/*.js
+    - demo/*
+    - dev/*

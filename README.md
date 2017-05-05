@@ -12,9 +12,27 @@
 Generated artifacts can be used with any node-based GraphQL server. The outcome of the project's main function call is an instance of the [`GraphQLSchema`](http://graphql.org/graphql-js/type/#graphqlschema) class.
 
 
+## Table of contents
+
+- [Disclaimers](#disclaimers)
+- [First steps](#first-steps)
+- [Demo](#demo)
+  - [Run it locally](#run-it-locally)
+  - [Deploy to Zeit's now](#deploy-to-zeits-now)
+- [Programmatic usage](#programmatic-usage)
+- [Querying](#querying)
+- [Contributing](#contributing)
+
+
+## Disclaimers
+
+1. Before reaching v1.0 both programmatic interfaces and the way how you query a space can change in a non-backwards compatible manner
+2. There's no magic: if your GraphQL query is complex, it'll result in multiple CDA calls that will be counted against your quota
+
+
 ## First steps
 
-If you just want to see how it works, please follow the [demo](#demo) section. If you want to get your hands dirty, install the package and follow the [Usage](#usage) section:
+If you just want to see how it works, please follow the [demo](#demo) section. If you want to get your hands dirty, install the package and follow the [Programmatic usage](#programmatic-usage) section:
 
 ```
 npm install --save cf-graphql
@@ -78,7 +96,7 @@ Please note:
 - if you use `now`'s OSS plan (the default one), you'll be asked if you want to make your source code public; it's completely fine: all credentials are passed as env variables and are not available publicly
 
 
-## Usage
+## Programmatic usage
 
 Let's assume we've required this module with `const cfGraphql = require('cf-graphql')`. To create a schema out of your space you need to call `cfGraphgl.createSchema(spaceGraph)`.
 

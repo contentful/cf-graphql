@@ -6,16 +6,20 @@ const {GraphQLObjectType, GraphQLList} = require('graphql');
 module.exports = createBackrefsType;
 
 function createBackrefsType (ct, ctIdToType) {
-  return new GraphQLObjectType({
-    name: ct.names.backrefsType,
-    fields: ct.backrefs.reduce((acc, backref) => {
-      const Type = ctIdToType[backref.ctId];
-      if (Type) {
-        acc[backref.backrefFieldName] = createBackrefFieldConfig(backref, Type);
-      }
-      return acc;
-    }, {})
-  });
+  const fields = prepareBackrefsFields(ct, ctIdToType);
+  if (Object.keys(fields).length > 0) {
+    return new GraphQLObjectType({name: ct.names.backrefsType, fields});
+  }
+}
+
+function prepareBackrefsFields (ct, ctIdToType) {
+  return (ct.backrefs || []).reduce((acc, backref) => {
+    const Type = ctIdToType[backref.ctId];
+    if (Type) {
+      acc[backref.backrefFieldName] = createBackrefFieldConfig(backref, Type);
+    }
+    return acc;
+  }, {});
 }
 
 function createBackrefFieldConfig (backref, Type) {
