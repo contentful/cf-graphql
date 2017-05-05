@@ -1,11 +1,11 @@
 # cf-graphql
 
-[![travis build status](https://img.shields.io/travis/jelz/cf-graphql.svg)](https://travis-ci.org/jelz/cf-graphql)
+[![travis build status](https://img.shields.io/travis/contentful-labs/cf-graphql.svg)](https://travis-ci.org/contentful-labs/cf-graphql)
 [![npm version](https://img.shields.io/npm/v/cf-graphql.svg)](https://www.npmjs.com/package/cf-graphql)
 [![npm downloads](https://img.shields.io/npm/dt/cf-graphql.svg)](https://www.npmjs.com/package/cf-graphql)
-[![deps status](https://img.shields.io/david/jelz/cf-graphql.svg)](https://david-dm.org/jelz/cf-graphql)
-[![dev deps status](https://img.shields.io/david/dev/jelz/cf-graphql.svg)](https://david-dm.org/jelz/cf-graphql?type=dev)
-[![codecov coverage](https://img.shields.io/codecov/c/github/jelz/cf-graphql.svg)](https://codecov.io/gh/jelz/cf-graphql)
+[![deps status](https://img.shields.io/david/contentful-labs/cf-graphql.svg)](https://david-dm.org/contentful-labs/cf-graphql)
+[![dev deps status](https://img.shields.io/david/dev/contentful-labs/cf-graphql.svg)](https://david-dm.org/contentful-labs/cf-graphql?type=dev)
+[![codecov coverage](https://img.shields.io/codecov/c/github/contentful-labs/cf-graphql.svg)](https://codecov.io/gh/contentful-labs/cf-graphql)
 
 `cf-graphql` is a library that allows you to query your data stored in [Contentful](https://www.contentful.com/) with [GraphQL](http://graphql.org/). A schema and value resolvers are automatically generated out of an existing space.
 
@@ -49,7 +49,7 @@ We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query
 This repository contains a demo project. To run it, clone the repository, install dependencies and start a server:
 
 ```
-git clone git@github.com:jelz/cf-graphql.git
+git clone git@github.com:contentful-labs/cf-graphql.git
 cd cf-graphql/demo
 nvm use # optional, but we prefer node v6.10
 npm install
