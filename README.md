@@ -39,14 +39,10 @@ In general `cf-graphql` is a library and it can be used as a part of your projec
 
 ## Demo
 
-We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query Contentful's "Blog" space template there. Contentful's "Blog" space template has the following content model:
+We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query Contentful's "Blog" space template there. This how its graph looks like:
 
-```
-space
-└─ post
-├─ author
-└─ category
-```
+![Demo space graph](./demo/demo-space-graph.png)
+
 
 ### Run it locally
 
@@ -79,7 +75,7 @@ SPACE_ID=some-space-id CDA_TOKEN=its-cda-token CMA_TOKEN=your-cma-token npm star
 
 ### Deploy to [Zeit's `now`](https://zeit.co/now)
 
-To be able to deploy to [Zeit's `now`](https://zeit.co/now) you need to have an activated account. There is a free open source option available. 
+To be able to deploy to [Zeit's `now`](https://zeit.co/now) you need to have an activated account. There is a free open source option available.
 
 You can also deploy the demo with `now`. In your terminal, navigate to the `demo/` directory and run:
 
