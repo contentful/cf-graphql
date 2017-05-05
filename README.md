@@ -32,16 +32,16 @@ Generated artifacts can be used with any node-based GraphQL server. The outcome 
 
 ## First steps
 
-If you just want to see how it works, please follow the [demo](#demo) section. If you want to get your hands dirty, install the package and follow the [Programmatic usage](#programmatic-usage) section:
+If you just want to see how it works, please follow the [Demo](#demo) section. You can deploy the demo with your own credentials so it queries your own data.
 
-```
-npm install --save cf-graphql
-```
+In general `cf-graphql` is a library and it can be used as a part of your project. If you want to get your hands dirty coding, follow the [Programmatic usage](#programmatic-usage) section.
 
 
 ## Demo
 
-We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query Contentful's "Blog" space template there.
+We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query Contentful's "Blog" space template there. This how its graph looks like:
+
+![Demo space graph](./demo/demo-space-graph.png)
 
 
 ### Run it locally
@@ -75,6 +75,8 @@ SPACE_ID=some-space-id CDA_TOKEN=its-cda-token CMA_TOKEN=your-cma-token npm star
 
 ### Deploy to [Zeit's `now`](https://zeit.co/now)
 
+To be able to deploy to [Zeit's `now`](https://zeit.co/now) you need to have an activated account. There is a free open source option available.
+
 You can also deploy the demo with `now`. In your terminal, navigate to the `demo/` directory and run:
 
 ```
@@ -91,12 +93,18 @@ SPACE_ID=some-space-id CDA_TOKEN=its-cda-token CMA_TOKEN=your-cma-token npm run 
 
 Please note:
 
-- when deploying a server with a demo space, the command to use is `npm run deploy-demo-now`; when using your own space, the command is `npm run deploy-now`
+- when deploying a server to consume Contentful's "Blog" space template, the command to use is `npm run deploy-demo-now`; when the demo should be configured to use your own space, the command is `npm run deploy-now`
 - if you've never used `now` before, you'll be asked to provide your e-mail; just follow on-screen instructions
 - if you use `now`'s OSS plan (the default one), you'll be asked if you want to make your source code public; it's completely fine: all credentials are passed as env variables and are not available publicly
 
 
 ## Programmatic usage
+
+The library can be installed with `npm`:
+
+```
+npm install --save cf-graphql
+```
 
 Let's assume we've required this module with `const cfGraphql = require('cf-graphql')`. To create a schema out of your space you need to call `cfGraphgl.createSchema(spaceGraph)`.
 
@@ -116,7 +124,7 @@ client.getContentTypes()
 });
 ```
 
-The last step is to use the schema with some server. A popular choice is [express-graphql](https://github.com/graphql/express-graphql). The only caveat is how the context is constructed. The library expects the `entryLoader` key of the context to be set to an instance created with `client.createEntryLoader()`:
+The last step is to use the schema with a server. A popular choice is [express-graphql](https://github.com/graphql/express-graphql). The only caveat is how the context is constructed. The library expects the `entryLoader` key of the context to be set to an instance created with `client.createEntryLoader()`:
 
 ```js
 // skipped: `require` calls, Express app setup, `client` creation
