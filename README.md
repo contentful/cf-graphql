@@ -32,11 +32,9 @@ Generated artifacts can be used with any node-based GraphQL server. The outcome 
 
 ## First steps
 
-If you just want to see how it works, please follow the [demo](#demo) section. If you want to get your hands dirty, install the package and follow the [Programmatic usage](#programmatic-usage) section:
+If you just want to see how it works, please follow the [Demo](#demo) section. You can deploy the demo with your own credentials so it queries your own data.
 
-```
-npm install --save cf-graphql
-```
+In general `cf-graphql` is a library and it can be used as a part of your project. If you want to get your hands dirty coding, follow the [Programmatic usage](#programmatic-usage) section.
 
 
 ## Demo
@@ -105,6 +103,12 @@ Please note:
 
 
 ## Programmatic usage
+
+The library can be installed with `npm`:
+
+```
+npm install --save cf-graphql
+```
 
 Let's assume we've required this module with `const cfGraphql = require('cf-graphql')`. To create a schema out of your space you need to call `cfGraphgl.createSchema(spaceGraph)`.
 
