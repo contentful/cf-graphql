@@ -49,33 +49,13 @@ function useDemoSpace () {
 
 function startServer (client, schema) {
   const app = express();
-  const {headers, statusCode, body} = cfGraphql.createUI();
 
-  app.get('/', (_, res) => res.set(headers).status(statusCode).end(body));
+  const ui = cfGraphql.helpers.graphiql({title: 'cf-graphql demo'});
+  app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
 
-  app.use('/graphql', graphqlHTTP(() => {
-    const start = Date.now();
-    const entryLoader = client.createEntryLoader();
-
-    return {
-      context: {entryLoader},
-      schema,
-      graphiql: false,
-      // timeline extension and detailed errors are nice for development, but
-      // most likely you want to skip them in your production setup
-      extensions: () => ({
-        time: Date.now()-start,
-        timeline: entryLoader.getTimeline().map(httpCall => {
-          return Object.assign({}, httpCall, {start: httpCall.start-start});
-        })
-      }),
-      formatError: error => ({
-        message: error.message,
-        locations: error.locations,
-        stack: error.stack
-      })
-    };
-  }));
+  const opts = {timeline: true, detailedErrors: false};
+  const ext = cfGraphql.helpers.expressGraphqlExtension(client, schema, opts);
+  app.use('/graphql', graphqlHTTP(ext));
 
   app.listen(port);
   console.log(`Running a GraphQL server, listening on ${port}`);

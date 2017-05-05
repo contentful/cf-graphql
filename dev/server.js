@@ -22,7 +22,7 @@ client.getContentTypes()
 })
 .then(cfGraphql.createSchema)
 .then(schema => {
-  const ui = cfGraphql.helpers.graphiql({title: 'cf-graphql demo'});
+  const ui = cfGraphql.helpers.graphiql({title: 'cf-graphql dev server'});
   app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
 
   const opts = {timeline: true, detailedErrors: false};
