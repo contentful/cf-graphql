@@ -1,7 +1,7 @@
 {
   "name": "cf-graphql",
   "description": "Generate a GraphQL schema out of your Contentful space",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "license": "MIT",
   "repository": "jelz/cf-graphql",
   "contributors": [
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "dataloader": "^1.3.0",
-    "graphql": "^0.9.3",
+    "graphql": "^0.9.6",
     "lodash.camelcase": "^4.3.0",
     "lodash.chunk": "^4.2.0",
     "lodash.get": "^4.4.2",
@@ -55,7 +55,7 @@
     "mkdirp": "^0.5.1",
     "nodemon": "^1.11.0",
     "proxyquire": "^1.7.11",
-    "sinon": "^2.1.0",
+    "sinon": "^2.2.0",
     "tape": "^4.6.3"
   }
 }
