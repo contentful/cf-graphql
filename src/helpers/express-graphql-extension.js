@@ -2,7 +2,10 @@
 
 // result of a `createExtension` call can be passed to express-graphql
 //
-// options available: "timeline" and "detailedErrors" (both default to false)
+// options available (all default to false):
+// - timeline: includes timing of HTTP calls
+// - detailedErrors: includes stacks of logged exceptions
+// - version: includes cf-graphql's version
 //
 // timeline extension and detailed errors are nice for development, but most
 // likely you want to skip them in your production setup
@@ -18,18 +21,36 @@ function createExtension (client, schema, options = {}) {
       context: {entryLoader},
       schema,
       graphiql: false,
-      extensions: options.timeline ? extensions : undefined,
+      extensions: prepareExtensions(start, options, entryLoader),
       formatError: options.detailedErrors ? formatError : undefined
     };
+  };
+}
 
-    function extensions () {
-      return {
+function prepareExtensions (start, options, entryLoader) {
+  if (!options.version && !options.timeline) {
+    return;
+  }
+
+  return () => {
+    const extensions = [];
+
+    if (options.version) {
+      extensions.push({
+        'cf-graphql': {version: require('../../package.json').version}
+      });
+    }
+
+    if (options.timeline) {
+      extensions.push({
         time: Date.now()-start,
         timeline: entryLoader.getTimeline().map(httpCall => {
           return Object.assign({}, httpCall, {start: httpCall.start-start});
         })
-      };
+      });
     }
+
+    return Object.assign({}, ...extensions);
   };
 }
 

@@ -23,6 +23,17 @@ test('express-graphql-extension: default options', function (t) {
   t.end();
 });
 
+test('express-graphql-extension: cf-graphql version extension', function (t) {
+  const extension = createExtension(client, schema, {version: true});
+  const extensions = extension().extensions();
+
+  t.deepEqual(extensions['cf-graphql'], {
+    version: require('../../package.json').version
+  });
+
+  t.end();
+});
+
 test('express-graphql-extension: timeline extension', function (t) {
   const extension = createExtension(client, schema, {timeline: true});
   const extensions = extension().extensions();
