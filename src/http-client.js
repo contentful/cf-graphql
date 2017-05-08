@@ -1,7 +1,9 @@
 'use strict';
 
+const os = require('os');
 const qs = require('querystring');
 const fetch = require('node-fetch');
+const _get = require('lodash.get');
 
 module.exports = createClient;
 
@@ -37,7 +39,10 @@ function get (url, params, opts) {
   const httpCall = {url, start: Date.now()};
   timeline.push(httpCall);
 
-  cache[url] = fetch(base + url, {headers})
+  cache[url] = fetch(
+    base + url,
+    {headers: Object.assign({}, getUserAgent(), headers)}
+  )
   .then(checkStatus)
   .then(res => {
     httpCall.duration = Date.now()-httpCall.start;
@@ -63,4 +68,29 @@ function getSortedQS (params) {
     pair[key] = params[key];
     return acc.concat([qs.stringify(pair)]);
   }, []).join('&');
+}
+
+function getUserAgent () {
+  const segments = ['app contentful.cf-graphql', getOs(), getPlatform()];
+  const joined = segments.filter(s => typeof s === 'string').join('; ');
+  return {'X-Contentful-User-Agent': `${joined};`};
+}
+
+function getOs () {
+  const name = {
+    win32: 'Windows',
+    darwin: 'macOS'
+  }[os.platform()] || 'Linux';
+
+  const release = os.release();
+  if (release) {
+    return `os ${name}/${release}`;
+  }
+}
+
+function getPlatform () {
+  const version = _get(process, ['versions', 'node']);
+  if (version) {
+    return `platform node.js/${version}`;
+  }
 }

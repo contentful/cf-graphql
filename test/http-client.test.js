@@ -4,8 +4,16 @@ const test = require('tape');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
-const stubs = {'node-fetch': sinon.stub()};
-const createClient = proxyquire('../src/http-client.js', stubs);
+const stubs = {
+  'node-fetch': sinon.stub(),
+  platform: sinon.stub().returns(null),
+  release: sinon.stub().returns(null)
+};
+
+const createClient = proxyquire('../src/http-client.js', {
+  'node-fetch': stubs['node-fetch'],
+  os: {platform: stubs.platform, release: stubs.release}
+});
 
 const prepare = (val, defaultParams = {}) => {
   const fetch = stubs['node-fetch'];
@@ -22,18 +30,22 @@ const prepare = (val, defaultParams = {}) => {
   };
 };
 
+const mockNodeVersion = ver => {
+  const original = process.versions;
+  Object.defineProperty(process, 'versions', {value: {node: ver}});
+  return () => Object.defineProperty(process, 'versions', original);
+};
+
 test('http-client: using base and headers', function (t) {
-  t.plan(3);
+  t.plan(4);
   const {fetch, http} = prepare();
 
   http.get('/endpoint')
   .then(res => {
     t.equal(res, true);
     t.equal(fetch.callCount, 1);
-    t.deepEqual(fetch.firstCall.args, [
-      'http://test.com/endpoint',
-      {headers: {'X-Test': 'yes'}}
-    ]);
+    t.equal(fetch.firstCall.args[0], 'http://test.com/endpoint');
+    t.equal(fetch.firstCall.args[1].headers['X-Test'], 'yes');
   });
 });
 
@@ -58,10 +70,7 @@ test('http-client: defaults', function (t) {
 
   createClient()
   .get('http://some-api.com/endpoint')
-  .then(() => t.deepEqual(fetch.firstCall.args, [
-    'http://some-api.com/endpoint',
-    {headers: {}}
-  ]));
+  .then(() => t.equal(fetch.firstCall.args[0], 'http://some-api.com/endpoint'));
 });
 
 test('http-client: non 2xx response codes', function (t) {
@@ -118,5 +127,39 @@ test('http-client: timeline', function (t) {
     t.equal(t2.url, '/two');
     t.ok(t1.start <= t2.start);
     t.ok(typeof t1.duration === 'number');
+  });
+});
+
+test('http-client: minimal User Agent header', function (t) {
+  t.plan(2);
+  const restore = mockNodeVersion(null);
+  const {http, fetch} = prepare();
+
+  http.get('/test')
+  .then(() => {
+    const headers = fetch.firstCall.args[1].headers;
+    const userAgent = headers['X-Contentful-User-Agent'];
+    t.equal(headers['X-Test'], 'yes');
+    t.equal(userAgent, 'app contentful.cf-graphql;');
+    restore();
+  });
+});
+
+test('http-client: User Agent OS and platform header', function (t) {
+  t.plan(1);
+  stubs.platform.returns('darwin');
+  stubs.release.returns('x.y.z');
+  const restore = mockNodeVersion('10.0.0');
+  const {http, fetch} = prepare();
+
+  http.get('/test')
+  .then(() => {
+    const userAgent = fetch.firstCall.args[1].headers['X-Contentful-User-Agent'];
+    t.deepEqual(userAgent.split('; '), [
+      'app contentful.cf-graphql',
+      'os macOS/x.y.z',
+      'platform node.js/10.0.0;'
+    ]);
+    restore();
   });
 });
