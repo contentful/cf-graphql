@@ -25,7 +25,7 @@ client.getContentTypes()
   const ui = cfGraphql.helpers.graphiql({title: 'cf-graphql dev server'});
   app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
 
-  const opts = {timeline: true, detailedErrors: false};
+  const opts = {version: true, timeline: true, detailedErrors: false};
   const ext = cfGraphql.helpers.expressGraphqlExtension(client, schema, opts);
   app.use('/graphql', graphqlHTTP(ext));
 

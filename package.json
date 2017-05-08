@@ -1,7 +1,7 @@
 {
   "name": "cf-graphql",
   "description": "Generate a GraphQL schema out of your Contentful space",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "repository": "contentful-labs/cf-graphql",
   "contributors": [
