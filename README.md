@@ -26,8 +26,11 @@ Generated artifacts can be used with any node-based GraphQL server. The outcome 
 
 ## Disclaimers
 
-1. Before reaching v1.0 both programmatic interfaces and the way how you query a space can change in a non-backwards compatible manner
-2. There's no magic: if your GraphQL query is complex, it'll result in multiple CDA calls that will be counted against your quota
+Please note that `cf-graphql` library is released as an experiment:
+
+- we might introduce breaking changes into programmatic interfaces and space querying approach before v1.0 is released
+- there’s no magic bullet: complex GraphQL queries can result in a large number of CDA calls, which will be counted against your quota
+- we might discontinue development of the library and stop maintaining it
 
 
 ## First steps
