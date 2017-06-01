@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "deploy-now": "now -e SPACE_ID -e CDA_TOKEN -e CMA_TOKEN",
-    "deploy-demo-now": "now"
+    "deploy-now": "now --public -e SPACE_ID -e CDA_TOKEN -e CMA_TOKEN",
+    "deploy-demo-now": "now --public"
   },
   "now": {
     "engines": {

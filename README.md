@@ -100,7 +100,7 @@ Please note:
 
 - when deploying a server to consume Contentful's "Blog" space template, the command to use is `npm run deploy-demo-now`; when the demo should be configured to use your own space, the command is `npm run deploy-now`
 - if you've never used `now` before, you'll be asked to provide your e-mail; just follow on-screen instructions
-- if you use `now`'s OSS plan (the default one), you'll be asked if you want to make your source code public; it's completely fine: all credentials are passed as env variables and are not available publicly
+- if you use `now`'s OSS plan (the default one), the source code will be public; it's completely fine: all credentials are passed as env variables and are not available publicly
 
 
 ## Programmatic usage
