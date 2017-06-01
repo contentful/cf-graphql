@@ -2,6 +2,7 @@
 
 const cfGraphql = require('cf-graphql');
 const express = require('express');
+const cors = require('cors');
 const graphqlHTTP = require('express-graphql');
 
 const port = process.env.PORT || 4000;
@@ -49,6 +50,7 @@ function useDemoSpace () {
 
 function startServer (client, schema) {
   const app = express();
+  app.use(cors());
 
   const ui = cfGraphql.helpers.graphiql({title: 'cf-graphql demo'});
   app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));

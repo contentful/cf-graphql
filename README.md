@@ -49,7 +49,9 @@ We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query
 
 ### Run it locally
 
-This repository contains a demo project. To run it, clone the repository, install dependencies and start a server:
+This repository contains a demo project. The demo comes with a web server (with [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) enabled) providing the GraphQL endpoint but also [an in-browser IDE(GraphiQL)](https://github.com/graphql/graphiql).
+
+To run it, clone the repository, install dependencies and start a server:
 
 ```
 git clone git@github.com:contentful-labs/cf-graphql.git
@@ -59,7 +61,7 @@ npm install
 npm start
 ```
 
-Navigate to <http://localhost:4000> to access an IDE (GraphiQL). You can query a demo space there. Please refer the [Querying](#querying) section for more details.
+Use <http://localhost:4000/graphql/> to query the data from within your application or navigate to <http://localhost:4000> to use the IDE (GraphiQL) for test-querying. Please refer to the [Querying](#querying) section for more details.
 
 To use your own Contentful space with the demo, you have to provide:
 
