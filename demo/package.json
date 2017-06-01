@@ -18,10 +18,10 @@
   "dependencies": {
     "cf-graphql": "^0.4.1",
     "cors": "^2.8.3",
-    "express": "^4.15.2",
-    "express-graphql": "^0.6.4"
+    "express": "^4.15.3",
+    "express-graphql": "^0.6.6"
   },
   "devDependencies": {
-    "now": "^5.1.2"
+    "now": "^6.2.4"
   }
 }
