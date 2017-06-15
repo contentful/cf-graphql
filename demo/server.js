@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const cfGraphql = require('cf-graphql');
 const express = require('express');
 const cors = require('cors');
@@ -52,6 +53,8 @@ function startServer (client, schema) {
   const app = express();
   app.use(cors());
 
+  app.use('/client', express.static(path.join(__dirname, 'dist')));
+
   const ui = cfGraphql.helpers.graphiql({title: 'cf-graphql demo'});
   app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
 
@@ -60,7 +63,10 @@ function startServer (client, schema) {
   app.use('/graphql', graphqlHTTP(ext));
 
   app.listen(port);
-  console.log(`Running a GraphQL server, listening on ${port}`);
+  console.log('Running a GraphQL server!');
+  console.log(`You can access GraphiQL at localhost:${port}`);
+  console.log(`You can use the GraphQL endpoint at localhost:${port}/graphql/`);
+  console.log(`You can have a look at a React Frontend at localhost:${port}/client/`);
 }
 
 function fail (err) {

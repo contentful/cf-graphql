@@ -2,14 +2,14 @@
 
 module.exports = getResponse;
 
-function getResponse (url) {
+function getResponse (opts) {
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-cache'
     },
-    body: body(url)
+    body: body(opts)
   };
 }
 

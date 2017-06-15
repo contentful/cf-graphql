@@ -21,6 +21,7 @@ Generated artifacts can be used with any node-based GraphQL server. The outcome 
   - [Deploy to Zeit's now](#deploy-to-zeits-now)
 - [Programmatic usage](#programmatic-usage)
 - [Querying](#querying)
+- [Helpers](#helpers)
 - [Contributing](#contributing)
 
 
@@ -49,7 +50,7 @@ We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query
 
 ### Run it locally
 
-This repository contains a demo project. The demo comes with a web server (with [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) enabled) providing the GraphQL endpoint but also [an in-browser IDE(GraphiQL)](https://github.com/graphql/graphiql).
+This repository contains a demo project. The demo comes with a web server (with [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) enabled) providing the GraphQL, [an in-browser IDE(GraphiQL)](https://github.com/graphql/graphiql) and a React Frontend application using this endpoint.
 
 To run it, clone the repository, install dependencies and start a server:
 
@@ -61,7 +62,9 @@ npm install
 npm start
 ```
 
-Use <http://localhost:4000/graphql/> to query the data from within your application or navigate to <http://localhost:4000> to use the IDE (GraphiQL) for test-querying. Please refer to the [Querying](#querying) section for more details.
+Use <http://localhost:4000/graphql/> to query the data from within your application and navigate to <http://localhost:4000> to use the IDE (GraphiQL) for test-querying. Please refer to the [Querying](#querying) section for more details.
+
+If you also want to see how to integrate GraphQL in a React technology stack the demo project also contains an application based on the [Apollo framework](https://www.apollodata.com/). To check it out use <http://localhost:4000/client/>.
 
 To use your own Contentful space with the demo, you have to provide:
 
@@ -223,6 +226,88 @@ When using backreferences, there is a couple of things to keep in mind:
 - backrefs are generated only when a reference field specifies a single allowed link content type
 - `_backrefs` is prefixed with a single underscore
 - `__via__` is surrounded with two underscores; you can read this query out loud like this: _"get posts that link to author via the author field"_
+
+
+## Helpers
+
+`cf-graphql` comes with helpers that help you with the `cf-graphql` integration. These are used inside of [the demo application](https://github.com/contentful-labs/cf-graphql/tree/master/demo).
+
+
+### `expressGraphqlExtension`
+
+If you're using [express-graphql](https://github.com/graphql/express-graphql) `cf-graphql` provides you an additional extension that you could use to enable additional information.
+
+```javascript
+const opts = {
+  // retreive the current cf-graphql version
+  version: true,
+  // include timings of the underlying Contentful CDA calls
+  timeline: true,
+  // format errors in a nice way
+  detailedErrors: true
+};
+
+const ext = cfGraphql.helpers.expressGraphqlExtension(client, schema, opts);
+app.use('/graphql', graphqlHTTP(ext));
+```
+
+With this you get responses like follows:
+
+```json
+{
+  "data": { ... },
+  "extensions": {
+    "cf-graphql": {
+      "version": "0.4.2"
+    },
+    "time": 146,
+    "timeline": [
+      {
+        "url": "/entries?content_type=2wKn6yEnZewu2SCCkus4as&include=1&limit=100&skip=0",
+        "start": 2,
+        "duration": 139
+      },
+      {
+        "url": "/entries?content_type=5KMiN6YPvi42icqAUQMCQe&include=1&limit=100&skip=0",
+        "start": 2,
+        "duration": 63
+      }
+    ]
+  }
+}
+```
+
+Or enriched error information including stack traces like this:
+
+```json
+{
+  "errors": [
+    {
+      "message": "Cannot query field \"title2\" on type \"Post\". Did you mean \"title\"?",
+      "locations": [
+        {
+          "line": 3,
+          "column": 5
+        }
+      ],
+      "stack": "GraphQLError: Cannot query field \"title2\" on type \"Post\". Did you mean \"title\"?\n ..."
+    }
+  ]
+}
+```
+
+**Important: Be aware that you most likely don't want to use the enabled `timeline` and `detailedErrors` feature in a production environment.**
+
+
+
+### `graphiql`
+
+If you want to run your own GraphiQL and don't want to rely on the one shipping with e.g. [express-graphql](https://github.com/graphql/express-graphql) then you could use the `graphiql` helper.
+
+```javascript
+const ui = cfGraphql.helpers.graphiql({title: 'cf-graphql demo'});
+app.get('/', (_, res) => res.set(ui.headers).status(ui.statusCode).end(ui.body));
+```
 
 
 ## Contributing
