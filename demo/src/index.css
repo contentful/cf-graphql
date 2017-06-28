@@ -1,0 +1,15 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+img {
+  display: block;
+  margin: 1em auto 2em;
+}
+
+.wrapper {
+  max-width: 50em;
+  margin: 0 auto;
+}
