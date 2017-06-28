@@ -13,18 +13,26 @@ const {EntrySysType, EntryType, IDType} = require('./base-types.js');
 const typeFieldConfigMap = require('./field-config.js');
 const createBackrefsType = require('./backref-types.js');
 
-module.exports = createSchema;
+module.exports = {
+  createSchema,
+  createQueryType,
+  createQueryFields
+};
 
-function createSchema (spaceGraph) {
-  const QueryType = new GraphQLObjectType({
-    name: 'Query',
-    fields: queryFields(spaceGraph)
+function createSchema (spaceGraph, queryTypeName) {
+  return new GraphQLSchema({
+    query: createQueryType(spaceGraph, queryTypeName)
   });
-
-  return new GraphQLSchema({query: QueryType});
 }
 
-function queryFields (spaceGraph) {
+function createQueryType (spaceGraph, name = 'Query') {
+  return new GraphQLObjectType({
+    name,
+    fields: createQueryFields(spaceGraph)
+  });
+}
+
+function createQueryFields (spaceGraph) {
   const ctIdToType = {};
 
   return spaceGraph.reduce((acc, ct) => {
