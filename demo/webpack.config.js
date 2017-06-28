@@ -1,44 +1,37 @@
 'use strict';
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
+const root = x => require('path').join(__dirname, x);
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  entry: [
-    './src/index.js'
-  ],
+  entry: root('src/index.js'),
   module: {
     loaders: [
       {
-        test: /\.jsx?$/,
+        test: /\.js$/,
         exclude: /node_modules/,
         loader: 'babel-loader'
-      },
-      {
-        test: /\.css$/,
-        loader: 'style-loader!css-loader'
       }
     ]
   },
-  resolve: {
-    extensions: ['*', '.js', '.jsx']
-  },
   output: {
-    path: __dirname + '/dist',
+    path: root('dist'),
     publicPath: '/',
     filename: 'bundle.js'
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      inject: false,
-      filename: 'index.html',
-      template: './src/index.html'
-    }),
     new CopyWebpackPlugin([
       {
-        from: './src/*.png',
+        from: 'src/*.+(html|css|png)',
         flatten: true
       }
-    ])
+    ]),
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('production')
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin()
   ]
 };
