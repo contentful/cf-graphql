@@ -2,25 +2,36 @@
 
 const test = require('tape');
 const sinon = require('sinon');
-const {graphql} = require('graphql');
 
-const createSchema = require('../src/schema.js');
+const {
+  graphql,
+  GraphQLSchema,
+  GraphQLObjectType
+} = require('graphql');
+
+const {
+  createSchema,
+  createQueryType,
+  createQueryFields
+} = require('../src/schema.js');
+
+const postct = {
+  id: 'postct',
+  names: {
+    field: 'post',
+    collectionField: 'posts',
+    type: 'Post'
+  },
+  fields: [
+    {id: 'title', type: 'String'},
+    {id: 'content', type: 'String'},
+    {id: 'category', type: 'Link<Entry>', linkedCt: 'catct'}
+  ]
+};
 
 test('schema: querying generated schema', function (t) {
   const spaceGraph = [
-    {
-      id: 'postct',
-      names: {
-        field: 'post',
-        collectionField: 'posts',
-        type: 'Post'
-      },
-      fields: [
-        {id: 'title', type: 'String'},
-        {id: 'content', type: 'String'},
-        {id: 'category', type: 'Link<Entry>', linkedCt: 'catct'}
-      ]
-    },
+    postct,
     {
       id: 'catct',
       names: {
@@ -106,4 +117,33 @@ test('schema: querying generated schema', function (t) {
     t.equal(res.errors, undefined);
     t.deepEqual(res.data, {categories: [{_backrefs: {posts__via__category: [{title: 'Hello world'}]}}]});
   });
+});
+
+test('schema: name of query type', function (t) {
+  t.plan(6);
+
+  ['Root', undefined].forEach(name => {
+    const schema = createSchema([postct], name);
+    const QueryType = createQueryType([postct], name);
+
+    t.ok(QueryType instanceof GraphQLObjectType);
+
+    const query = '{ __schema { queryType { name } } }';
+    const assertName = ({data}) => t.equal(data.__schema.queryType.name, name || 'Query');
+
+    graphql(schema, query).then(assertName);
+    graphql(new GraphQLSchema({query: QueryType}), query).then(assertName);
+  });
+});
+
+test('schema: producting query fields', function (t) {
+  const queryFields = createQueryFields([postct]);
+
+  t.equal(typeof queryFields, 'object');
+  t.deepEqual(
+    Object.keys(queryFields).sort(),
+    ['post', 'posts'].sort()
+  );
+
+  t.end();
 });
