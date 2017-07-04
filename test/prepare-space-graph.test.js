@@ -155,9 +155,9 @@ test('prepare-space-graph: finding linked content types', function (t) {
   }, []);
 
   const [p] = prepareSpaceGraph([testCt(fields)]);
-  const linkedCts = p.fields.map(f => f.linkedCt).filter(id => typeof id === 'string');
+  const linkedCts = p.fields.map(f => f.linkedCt).filter(links => links).map(link => link);
 
-  t.deepEqual(linkedCts, ['baz', 'baz']);
+  t.deepEqual(linkedCts, [['baz'],['baz']]);
 
   t.end();
 });
@@ -167,7 +167,7 @@ test('prepare-space-graph: mixing field and items validations', function (t) {
   const fields = [{id: 'fid', type: 'Array', validations: [], items}];
   const [p] = prepareSpaceGraph([testCt(fields)]);
 
-  t.equal(p.fields[0].linkedCt, 'ctid');
+  t.equal(p.fields[0].linkedCt[0], 'ctid');
 
   t.end();
 });
@@ -195,6 +195,77 @@ test('prepare-space-graph: adding backreferences', function (t) {
     fieldId: 'author',
     backrefFieldName: 'posts__via__author'
   }]);
+
+  t.end();
+});
+
+
+test('prepare-space-graph: adding backreferences to field with multiple content types', function (t) {
+  const cts = [
+    {
+      sys: {id: 'post'},
+      name: 'post',
+      fields: [
+        {id: 'components', type: 'Link', linkType: 'Entry', validations: [{linkContentType: ['author', 'article']}]}
+      ]
+    },
+    {
+      sys: {id: 'article'},
+      name: 'article',
+      fields: []
+    },
+    {
+      sys: {id: 'author'},
+      name: 'author',
+      fields: []
+    }
+  ];
+
+  const [pPost, pAuthor, pArticle] = prepareSpaceGraph(cts, true);
+  t.equal(pPost._backrefs, undefined);
+  
+  t.deepEqual(pAuthor.backrefs, [{
+    ctId: 'post',
+    fieldId: 'components',
+    backrefFieldName: 'posts__via__components'
+  }]);
+  
+  t.deepEqual(pArticle.backrefs, [{
+    ctId: 'post',
+    fieldId: 'components',
+    backrefFieldName: 'posts__via__components'
+  }]);
+
+  t.end();
+});
+
+test('prepare-space-graph: adding backreferences to field with multiple content types', function (t) {
+  const cts = [
+    {
+      sys: {id: 'post'},
+      name: 'post',
+      fields: [
+        {id: 'components', type: 'Link', linkType: 'Entry', validations: [{linkContentType: ['author', 'article']}]}
+      ]
+    },
+    {
+      sys: {id: 'article'},
+      name: 'article',
+      fields: []
+    },
+    {
+      sys: {id: 'author'},
+      name: 'author',
+      fields: []
+    }
+  ];
+
+  const [pPost, pAuthor, pArticle] = prepareSpaceGraph(cts);
+  t.equal(pPost._backrefs, undefined);
+  
+  t.deepEqual(pAuthor.backrefs, undefined);
+  
+  t.deepEqual(pArticle.backrefs, undefined);
 
   t.end();
 });

@@ -31,18 +31,18 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 
 module.exports = prepareSpaceGraph;
 
-function prepareSpaceGraph (cts) {
-  return addBackrefs(createSpaceGraph(cts));
+function prepareSpaceGraph (cts, allowMultipleContentTypeFieldsForBackref = false) {
+  return addBackrefs(createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref));
 }
 
-function createSpaceGraph (cts) {
+function createSpaceGraph (cts, allowMultipleContentTypeFieldsForBackref) {
   const accumulatedNames = {};
 
   return cts.map(ct => ({
     id: ct.sys.id,
     names: names(ct.name, accumulatedNames),
     fields: ct.fields.reduce((acc, f) => {
-      return f.omitted ? acc : acc.concat([field(f)]);
+      return f.omitted ? acc : acc.concat([field(f, allowMultipleContentTypeFieldsForBackref)]);
     }, [])
   }));
 }
@@ -72,7 +72,7 @@ function checkForConflicts (names, accumulatedNames) {
   return names;
 }
 
-function field (f) {
+function field (f, allowMultipleContentTypeFieldsForBackref) {
   ['sys', '_backrefs'].forEach(id => {
     if (f.id === id) {
       throw new Error(`Fields named "${id}" are unsupported`);
@@ -82,7 +82,7 @@ function field (f) {
   return {
     id: f.id,
     type: type(f),
-    linkedCt: linkedCt(f)
+    linkedCt: linkedCt(f, allowMultipleContentTypeFieldsForBackref)
   };
 }
 
@@ -117,12 +117,13 @@ function isEntityType (x) {
   return ENTITY_TYPES.indexOf(x) > -1;
 }
 
-function linkedCt (f) {
+function linkedCt (f, allowMultipleContentTypeFieldsForBackref) {
   const prop = 'linkContentType';
   const validation = getValidations(f).find(v => {
-    return Array.isArray(v[prop]) && v[prop].length === 1;
+    return Array.isArray(v[prop]) && (allowMultipleContentTypeFieldsForBackref ? v[prop].length : v[prop].length === 1);
   });
-  const linkedCt = validation && validation[prop][0];
+
+  const linkedCt = validation && validation[prop];
 
   if (linkedCt) {
     return linkedCt;
@@ -144,13 +145,17 @@ function addBackrefs (spaceGraph) {
   }, {});
 
   spaceGraph.forEach(ct => ct.fields.forEach(field => {
-    if (field.linkedCt && byId[field.linkedCt]) {
-      const linked = byId[field.linkedCt];
-      linked.backrefs = linked.backrefs || [];
-      linked.backrefs.push({
-        ctId: ct.id,
-        fieldId: field.id,
-        backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
+    if (field.linkedCt) {
+      field.linkedCt.forEach(link => {
+        const linked = byId[link];
+        if (linked) {
+          linked.backrefs = linked.backrefs || [];
+          linked.backrefs.push({
+            ctId: ct.id,
+            fieldId: field.id,
+            backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
+          });
+        }
       });
     }
   }));
