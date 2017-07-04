@@ -238,3 +238,34 @@ test('prepare-space-graph: adding backreferences to field with multiple content 
 
   t.end();
 });
+
+test('prepare-space-graph: adding backreferences to field with multiple content types', function (t) {
+  const cts = [
+    {
+      sys: {id: 'post'},
+      name: 'post',
+      fields: [
+        {id: 'components', type: 'Link', linkType: 'Entry', validations: [{linkContentType: ['author', 'article']}]}
+      ]
+    },
+    {
+      sys: {id: 'article'},
+      name: 'article',
+      fields: []
+    },
+    {
+      sys: {id: 'author'},
+      name: 'author',
+      fields: []
+    }
+  ];
+
+  const [pPost, pAuthor, pArticle] = prepareSpaceGraph(cts);
+  t.equal(pPost._backrefs, undefined);
+  
+  t.deepEqual(pAuthor.backrefs, undefined);
+  
+  t.deepEqual(pArticle.backrefs, undefined);
+
+  t.end();
+});
