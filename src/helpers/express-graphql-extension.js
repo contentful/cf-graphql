@@ -13,10 +13,9 @@
 module.exports = createExtension;
 
 function createExtension (client, schema, options = {}) {
-  return function () {
+  return function (req, res, params) {
     const start = Date.now();
-    const entryLoader = client.createEntryLoader();
-
+    const entryLoader = client.createEntryLoader(params.variables.preview ? 'preview' : 'cdn');
     return {
       context: {entryLoader},
       schema,
