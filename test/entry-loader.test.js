@@ -3,23 +3,23 @@
 const test = require('tape');
 const sinon = require('sinon');
 
-const DEFAULT_ITEMS = [
+const createEntryLoader = require('../src/entry-loader.js');
+
+const ITEMS = [
   {sys: {id: 'xyz'}},
   {sys: {id: 'abc', contentType: {sys: {id: 'ctid'}}}}
 ];
 
-const prepareHttpStub = items => {
+const prepare = () => {
   const getStub = sinon.stub();
-  getStub.resolves({items: items || DEFAULT_ITEMS});
-  return {get: getStub};
+  const httpStub = {get: getStub};
+  getStub.resolves({items: ITEMS});
+  return {httpStub, loader: createEntryLoader(httpStub)};
 };
-
-const createEntryLoader = require('../src/entry-loader.js');
 
 test('entry-loader: getting one entry', function (t) {
   t.plan(5);
-  const httpStub = prepareHttpStub();
-  const loader = createEntryLoader(httpStub);
+  const {httpStub, loader} = prepare();
 
   const p1 = loader.get('xyz')
   .then(entry => t.deepEqual(entry, {sys: {id: 'xyz'}}));
@@ -40,21 +40,17 @@ test('entry-loader: getting one entry', function (t) {
 
 test('entry-loader: getting many entries', function (t) {
   t.plan(1);
-  const httpStub = prepareHttpStub();
-  const loader = createEntryLoader(httpStub);
+  const {loader} = prepare();
 
   loader.getMany(['xyz', 'lol', 'abc'])
-  .then(items => t.deepEqual(items, [
-    DEFAULT_ITEMS[0], undefined, DEFAULT_ITEMS[1]
-  ]));
+  .then(items => t.deepEqual(items, [ITEMS[0], undefined, ITEMS[1]]));
 });
 
 test('entry-loader: querying entries', function (t) {
   t.plan(2);
-  const httpStub = prepareHttpStub();
-  const loader = createEntryLoader(httpStub);
+  const {httpStub, loader} = prepare();
 
-  loader.query('ctid', 'fields.someNum=123&fields.test[exists]=true')
+  loader.query('ctid', {q: 'fields.someNum=123&fields.test[exists]=true'})
   .then(() => {
     t.equal(httpStub.get.callCount, 1);
     t.deepEqual(httpStub.get.lastCall.args, ['/entries', {
@@ -68,10 +64,38 @@ test('entry-loader: querying entries', function (t) {
   });
 });
 
+test('entry-loader: querying entries with custom skip/limit', function (t) {
+  t.plan(2);
+  const {httpStub, loader} = prepare();
+
+  loader.query('ctid', {skip: 1, limit: 2, q: 'x=y'})
+  .then(() => {
+    t.equal(httpStub.get.callCount, 1);
+    t.deepEqual(httpStub.get.lastCall.args, ['/entries', {
+      skip: 1,
+      limit: 2,
+      include: 1,
+      content_type: 'ctid',
+      x: 'y'
+    }]);
+  });
+});
+
+test('entry-loader: using forbidden query parameters in QS', function (t) {
+  const {httpStub, loader} = prepare();
+  ['skip', 'limit', 'include', 'content_type'].forEach(key => {
+    t.throws(
+      () => loader.query('ctid', {q: `x=y&${key}=value`}),
+      /query param named/i
+    );
+  });
+  t.equal(httpStub.get.callCount, 0);
+  t.end();
+});
+
 test('entry-loader: getting all entries of a content type', function (t) {
   t.plan(7);
-  const httpStub = prepareHttpStub();
-  const loader = createEntryLoader(httpStub);
+  const {httpStub, loader} = prepare();
 
   const ids = Array.apply(null, {length: 3001}).map((_, i) => `e${i+1}`);
   const entries = ids.map(id => ({sys: {id}}));
@@ -97,8 +121,7 @@ test('entry-loader: getting all entries of a content type', function (t) {
 
 test('entry-loader: including assets', function (t) {
   t.plan(5);
-  const httpStub = prepareHttpStub();
-  const loader = createEntryLoader(httpStub);
+  const {httpStub, loader} = prepare();
 
   const includesValues = [
     {Asset: [{sys: {id: 'a1'}}]},
@@ -121,12 +144,9 @@ test('entry-loader: including assets', function (t) {
 });
 
 test('entry-loader: timeline', function (t) {
-  const httpStub = prepareHttpStub();
+  const {httpStub, loader} = prepare();
   const tl = {};
   httpStub.timeline = tl;
-  const loader = createEntryLoader(httpStub);
-
   t.equal(loader.getTimeline(), tl);
-
   t.end();
 });

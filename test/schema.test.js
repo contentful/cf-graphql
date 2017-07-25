@@ -73,16 +73,19 @@ test('schema: querying generated schema', function (t) {
 
   testQuery('{ posts { title } }', {query: sinon.stub().resolves([post])})
   .then(([entryLoader, res]) => {
-    t.deepEqual(entryLoader.query.firstCall.args, ['postct', undefined]);
+    t.deepEqual(entryLoader.query.firstCall.args, ['postct', {}]);
     t.equal(res.errors, undefined);
     t.deepEqual(res.data.posts, [{title: 'Hello world'}]);
   });
 
   testQuery(
-    '{ categories(q: "fields.name=test") { name } }',
+    '{ categories(skip: 2, limit: 3, q: "fields.name=test") { name } }',
     {query: sinon.stub().resolves([category])}
   ).then(([entryLoader, res]) => {
-    t.deepEqual(entryLoader.query.firstCall.args, ['catct', 'fields.name=test']);
+    t.deepEqual(
+      entryLoader.query.firstCall.args,
+      ['catct', {skip: 2, limit: 3, q: 'fields.name=test'}]
+    );
     t.equal(res.errors, undefined);
     t.deepEqual(res.data.categories, [{name: 'test'}]);
   });
@@ -102,7 +105,7 @@ test('schema: querying generated schema', function (t) {
     '{ posts { title } category(id: "c1") { name } }',
     {query: sinon.stub().resolves([post]), get: sinon.stub().resolves(category)}
   ).then(([entryLoader, res]) => {
-    t.deepEqual(entryLoader.query.firstCall.args, ['postct', undefined]);
+    t.deepEqual(entryLoader.query.firstCall.args, ['postct', {}]);
     t.deepEqual(entryLoader.get.firstCall.args, ['c1', 'catct']);
     t.equal(res.errors, undefined);
     t.deepEqual(res.data, {posts: [{title: 'Hello world'}], category: {name: 'test'}});
@@ -112,7 +115,7 @@ test('schema: querying generated schema', function (t) {
     '{ categories { _backrefs { posts__via__category { title } } } }',
     {query: sinon.stub().resolves([category]), queryAll: sinon.stub().resolves([post])}
   ).then(([entryLoader, res]) => {
-    t.deepEqual(entryLoader.query.firstCall.args, ['catct', undefined]);
+    t.deepEqual(entryLoader.query.firstCall.args, ['catct', {}]);
     t.deepEqual(entryLoader.queryAll.firstCall.args, ['postct']);
     t.equal(res.errors, undefined);
     t.deepEqual(res.data, {categories: [{_backrefs: {posts__via__category: [{title: 'Hello world'}]}}]});
