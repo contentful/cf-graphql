@@ -57,7 +57,7 @@ To run it, clone the repository, install dependencies and start a server:
 ```
 git clone git@github.com:contentful-labs/cf-graphql.git
 cd cf-graphql/demo
-nvm use # optional, but we prefer node v6.10
+nvm use # optional, we prefer node v6 LTS
 npm install
 npm start
 ```
