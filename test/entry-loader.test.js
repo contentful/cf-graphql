@@ -83,7 +83,7 @@ test('entry-loader: querying entries with custom skip/limit', function (t) {
 
 test('entry-loader: using forbidden query parameters in QS', function (t) {
   const {httpStub, loader} = prepare();
-  ['skip', 'limit', 'include', 'content_type'].forEach(key => {
+  ['skip', 'limit', 'include', 'content_type', 'locale'].forEach(key => {
     t.throws(
       () => loader.query('ctid', {q: `x=y&${key}=value`}),
       /query param named/i

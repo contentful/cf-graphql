@@ -8,7 +8,7 @@ const DataLoader = require('dataloader');
 const INCLUDE_DEPTH = 1;
 const CHUNK_SIZE = 100;
 const MAX_LIMIT = 1000;
-const FORBIDDEN_QUERY_PARAMS = ['skip', 'limit', 'include', 'content_type'];
+const FORBIDDEN_QUERY_PARAMS = ['skip', 'limit', 'include', 'content_type', 'locale'];
 
 module.exports = createEntryLoader;
 
