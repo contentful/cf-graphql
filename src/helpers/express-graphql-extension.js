@@ -13,10 +13,11 @@
 module.exports = createExtension;
 
 function createExtension (client, schema, options = {}) {
-  return function () {
+  return function (req, res, params) {
     const start = Date.now();
-    const entryLoader = client.createEntryLoader();
-
+    let api = 'cdn';
+    if (params && params.variables && params.variables.preview) api = 'preview';
+    const entryLoader = client.createEntryLoader(api);
     return {
       context: {entryLoader},
       schema,

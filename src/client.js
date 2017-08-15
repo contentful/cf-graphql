@@ -4,6 +4,7 @@ const createHttpClient = require('./http-client.js');
 const createEntryLoader = require('./entry-loader.js');
 
 const CDA = 'cdn';
+const CPA = 'preview';
 const CMA = 'api';
 
 module.exports = createClient;
@@ -15,8 +16,9 @@ function createClient (config) {
       .get('/content_types', {limit: 1000})
       .then(res => res.items);
     },
-    createEntryLoader: function () {
-      return createEntryLoader(createContentfulClient(CDA, config));
+    createEntryLoader: function (api) {
+      api = api || 'cdn';
+      return createEntryLoader(createContentfulClient(api, config));
     }
   };
 }
@@ -26,7 +28,11 @@ function createContentfulClient (api, config) {
   const domain = config.domain || 'contentful.com';
   const base = `${protocol}://${api}.${domain}/spaces/${config.spaceId}`;
 
-  const token = api === CDA ? config.cdaToken : config.cmaToken;
+  let token = '';
+  if (api === CPA) token = config.cpaToken;
+  else if (api === CDA) token = config.cdaToken;
+  else token = config.cmaToken;
+
   const headers = {Authorization: `Bearer ${token}`};
 
   const defaultParams = {};
