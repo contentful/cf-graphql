@@ -7,6 +7,7 @@ const DataLoader = require('dataloader');
 
 const INCLUDE_DEPTH = 1;
 const CHUNK_SIZE = 100;
+const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 1000;
 const FORBIDDEN_QUERY_PARAMS = ['skip', 'limit', 'include', 'content_type', 'locale'];
 
@@ -57,7 +58,7 @@ function createEntryLoader (http) {
     });
   }
 
-  function query (ctId, {q = '', skip = 0, limit = 100} = {}) {
+  function query (ctId, {q = '', skip = 0, limit = DEFAULT_LIMIT} = {}) {
     const parsed = qs.parse(q);
     Object.keys(parsed).forEach(key => {
       if (FORBIDDEN_QUERY_PARAMS.includes(key)) {

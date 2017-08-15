@@ -55,7 +55,7 @@ test('entry-loader: querying entries', function (t) {
     t.equal(httpStub.get.callCount, 1);
     t.deepEqual(httpStub.get.lastCall.args, ['/entries', {
       skip: 0,
-      limit: 100,
+      limit: 50,
       include: 1,
       content_type: 'ctid',
       'fields.someNum': '123',
