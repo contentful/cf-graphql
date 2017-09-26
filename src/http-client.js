@@ -58,27 +58,6 @@ function rest(entryId, params, opts) {
 
   return cache[url];
 }
-// function rest(entryId, params, opts) {
-//   const { base, spaceName, timeline, cache, locale } = opts;
-//   const httpCall = { entryId, start: Date.now() };
-//   timeline.push(httpCall);
-
-//   const url = `${base}${params.path}/${spaceName}/${entryId}`
-//   const cached = cache[url];
-//   if (cached) {
-//     return cached;
-//   }
-
-//   cache[url] = fetch(url)
-//     .then(checkStatus)
-//     .then(res => {
-//       httpCall.duration = Date.now() - httpCall.start;
-//       return res.json();
-//     })
-//     .then(item => removeLocale(item, locale));
-
-//   return cache[url];
-// }
 
 function cfGet(url, params, opts) {
   const paramsWithDefaults = Object.assign({}, opts.defaultParams, params);
