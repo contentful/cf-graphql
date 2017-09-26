@@ -1,7 +1,6 @@
 'use strict';
 
 const _get = require('lodash.get');
-const qs = require('querystring');
 const DataLoader = require('dataloader');
 
 module.exports = createEntryLoader;

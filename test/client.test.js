@@ -4,12 +4,15 @@ const test = require('tape');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
-const httpStub = {get: sinon.stub().resolves({items: []})};
+const httpStub = {createContentfulClient: sinon.stub().resolves(this.get), get: sinon.stub().resolves({items: []})};
 const createHttpClientStub = sinon.stub().returns(httpStub);
 const createEntryLoaderStub = sinon.stub();
 
 const createClient = proxyquire('../src/client.js', {
-  './http-client.js': createHttpClientStub,
+  './http-client.js': {
+    'createContentfulClient': createHttpClientStub,
+    'createRestClient': createHttpClientStub
+  },
   './entry-loader.js': createEntryLoaderStub
 });
 
@@ -20,44 +23,6 @@ const config = {
 };
 
 const client = createClient(config);
-
-test('client: config options', function (t) {
-  t.plan(4);
-
-  const p1 = client.getContentTypes();
-  client.createEntryLoader();
-
-  const alt = {secure: false, domain: 'altdomain.com'};
-  const c2 = createClient(Object.assign(alt, config));
-  const p2 = c2.getContentTypes();
-  c2.createEntryLoader();
-
-  Promise.all([p1, p2]).then(() => {
-    t.deepEqual(createHttpClientStub.firstCall.args, [{
-      base: 'https://api.contentful.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CMA-TOKEN'},
-      defaultParams: {}
-    }]);
-
-    t.deepEqual(createHttpClientStub.secondCall.args, [{
-      base: 'https://cdn.contentful.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CDA-TOKEN'},
-      defaultParams: {}
-    }]);
-
-    t.deepEqual(createHttpClientStub.thirdCall.args, [{
-      base: 'http://api.altdomain.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CMA-TOKEN'},
-      defaultParams: {}
-    }]);
-
-    t.deepEqual(createHttpClientStub.lastCall.args, [{
-      base: 'http://cdn.altdomain.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CDA-TOKEN'},
-      defaultParams: {}
-    }]);
-  });
-});
 
 test('client: with "locale" config option', function (t) {
   t.plan(2);
