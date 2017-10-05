@@ -31,7 +31,7 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 
 module.exports = prepareSpaceGraph;
 
-function prepareSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref = false) {
+function prepareSpaceGraph(cts, basePageTypes = [], allowMultipleContentTypeFieldsForBackref = false) {
   return addBackrefs(createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref));
 }
 

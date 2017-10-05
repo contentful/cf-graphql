@@ -14,7 +14,7 @@ function createClient(config) {
       .then(res => res.items);
     },
     createEntryLoader: function () {
-      return createEntryLoader(createRestClient(config));
+      return createEntryLoader(createRestClient(config), config.basePageTypes);
     }
   };
 }
