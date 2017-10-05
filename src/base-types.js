@@ -64,10 +64,6 @@ const BasePageType = new GraphQLInterfaceType({
     url: {
       type: GraphQLString
     }
-  },
-  resolveType: (data) => {
-    const ctId = _get(data, ['sys', 'contentType', 'sys', 'id']);
-    return ctId.charAt(0).toUpperCase() + ctId.slice(1);
   }
 });
 
