@@ -24,7 +24,7 @@ function prepareBackrefsFields(ct, ctIdToType) {
         resolve: (entryId, _, ctx) => {
           return Promise.all([ctx.entryLoader.queryAll('page'), ctx.entryLoader.queryAll('conceptPage'), ctx.entryLoader.queryAll('conceptOverviewPage')]).then(response => {
             return [...filterEntries(response[0], backref.fieldId, entryId), ...filterEntries(response[1], backref.fieldId, entryId), ...filterEntries(response[2], backref.fieldId, entryId)]
-          })
+          });
         }
       };
     }
@@ -36,14 +36,8 @@ function createBackrefFieldConfig(backref, Type) {
   return {
     type: new GraphQLList(Type),
     resolve: (entryId, _, ctx) => {
-      if (backref.backrefFieldName.includes('root')) {
-        return Promise.all([ctx.entryLoader.queryAll('page'), ctx.entryLoader.queryAll('conceptPage'), ctx.entryLoader.queryAll('conceptOverviewPage')]).then(response => {
-          return [...filterEntries(response[0], backref.fieldId, entryId), ...filterEntries(response[1], backref.fieldId, entryId), ...filterEntries(response[2], backref.fieldId, entryId)]
-        })
-      } else {
-        return ctx.entryLoader.queryAll(backref.ctId)
-          .then(entries => filterEntries(entries, backref.fieldId, entryId));
-      }
+      return ctx.entryLoader.queryAll(backref.ctId)
+      .then(entries => filterEntries(entries, backref.fieldId, entryId));      
     }
   };
 }

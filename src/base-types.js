@@ -69,10 +69,6 @@ const RootType = new GraphQLInterfaceType({
     const ctId = _get(data, ['sys', 'contentType', 'sys', 'id']);
     return ctId.charAt(0).toUpperCase() + ctId.slice(1);
   }
-  // isTypeOf: entry => {
-  //   const ctId = _get(entry, ['sys', 'contentType', 'sys', 'id']);
-  //   return ctId === ct.id;
-  // }
 });
 
 const EntryType = new GraphQLInterfaceType({

@@ -35,13 +35,7 @@ function createQueryType(spaceGraph, name = 'Query') {
 function createQueryFields(spaceGraph) {
   const ctIdToType = {};
 
-  // spaceGraph.splice(0, 0, {
-  //   fields: [],
-  //   id: "root",
-  //   names: { field: "root", collectionField: "roots", type: "Root", backrefsType: "RootBackrefs" }
-  // })
-
-  const a = spaceGraph.reduce((acc, ct) => {
+  return spaceGraph.reduce((acc, ct) => {
     const defaultFieldsThunk = () => {
       const fields = { sys: { type: EntrySysType } };
       const BackrefsType = createBackrefsType(ct, ctIdToType);
@@ -70,7 +64,7 @@ function createQueryFields(spaceGraph) {
       type: Type,
       args: { id: { type: IDType } },
       resolve: (_, args, ctx) => {
-        return ctx.entryLoader.get(args.id, ct.id)
+        return ctx.entryLoader.get(args.id, ct.id);
       }
     };
 
@@ -82,32 +76,4 @@ function createQueryFields(spaceGraph) {
 
     return acc;
   }, {});
-
-  const rootType = new GraphQLObjectType({
-      name: 'root',
-      interfaces: [EntryType, RootType],
-      fields: [],
-      isTypeOf: entry => {
-        const ctId = _get(entry, ['sys', 'contentType', 'sys', 'id']);
-        return ctId === ct.id;
-      }
-    });
-
-  // a['root'] = {
-  //   type: rootType,
-  //   args: { id: { type: IDType } },
-  //   resolve: (_, args, ctx) => {
-  //     return ctx.entryLoader.get(args.id, ct.id)
-  //   }
-  // };
-
-  // a['root'] = {
-  //   type: new GraphQLList(RootType),
-  //   args: { id: { type: IDType } },
-  //   resolve: (_, args, ctx) => {
-  //     return ctx.entryLoader.get(args.id, ct.id)
-  //   }
-  // }
-
-  return a
 }
