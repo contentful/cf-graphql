@@ -8,14 +8,14 @@ const {
   createQueryFields
 } = require('./schema.js');
 
-module.exports = class CfGraphql {
-  constructor(opts) {
-    this.opts = opts;
-    this.createClient = () => createClient(opts);
-    this.prepareSpaceGraph = (contentTypes) => prepareSpaceGraph(contentTypes, opts.basePageTypes, opts.allowMultipleContentTypeFieldsForBackref);
-    this.createSchema = (spaceGraph, queryTypeName) => createSchema(spaceGraph, queryTypeName);
-    this.createQueryType = () => createQueryType;
-    this.createQueryFields = createQueryFields;
-    this.helpers = helpers;
-  }
+module.exports = function (opts) {
+  this.opts = opts;
+  return {
+    createClient: () => createClient(opts),
+    prepareSpaceGraph: (contentTypes) => prepareSpaceGraph(contentTypes, opts.basePageTypes, opts.allowMultipleContentTypeFieldsForBackref),
+    createSchema: (spaceGraph, queryTypeName) => createSchema(spaceGraph, queryTypeName),
+    createQueryType: () => createQueryType,
+    createQueryFields: createQueryFields,
+    helpers
+  };
 };
