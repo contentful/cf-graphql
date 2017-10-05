@@ -2,7 +2,7 @@
 
 const _get = require('lodash.get');
 const { GraphQLObjectType, GraphQLList } = require('graphql');
-const { RootType } = require('./base-types.js');
+const { BasePageType } = require('./base-types.js');
 
 module.exports = createBackrefsType;
 
@@ -18,9 +18,9 @@ function prepareBackrefsFields(ct, ctIdToType) {
     const Type = ctIdToType[backref.ctId];
     if (Type) {
       acc[backref.backrefFieldName] = createBackrefFieldConfig(backref, Type);
-    } else if (backref.ctId === 'root') {
+    } else if (backref.ctId === 'basePage') {
       acc[backref.backrefFieldName] = {
-        type: new GraphQLList(RootType),
+        type: new GraphQLList(BasePageType),
         resolve: (entryId, _, ctx) => {
           return Promise.all([ctx.entryLoader.queryAll('page'), ctx.entryLoader.queryAll('conceptPage'), ctx.entryLoader.queryAll('conceptOverviewPage')]).then(response => {
             return [...filterEntries(response[0], backref.fieldId, entryId), ...filterEntries(response[1], backref.fieldId, entryId), ...filterEntries(response[2], backref.fieldId, entryId)]
