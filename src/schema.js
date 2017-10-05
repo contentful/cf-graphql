@@ -19,20 +19,20 @@ module.exports = {
   createQueryFields
 };
 
-function createSchema(spaceGraph, queryTypeName) {
+function createSchema(spaceGraph, queryTypeName, basePageTypes) {
   return new GraphQLSchema({
-    query: createQueryType(spaceGraph, queryTypeName)
+    query: createQueryType(spaceGraph, queryTypeName, basePageTypes)
   });
 }
 
-function createQueryType(spaceGraph, name = 'Query') {
+function createQueryType(spaceGraph, name = 'Query', basePageTypes) {
   return new GraphQLObjectType({
     name,
-    fields: createQueryFields(spaceGraph)
+    fields: createQueryFields(spaceGraph, basePageTypes)
   });
 }
 
-function createQueryFields(spaceGraph) {
+function createQueryFields(spaceGraph, basePageTypes = []) {
   const ctIdToType = {};
 
   return spaceGraph.reduce((acc, ct) => {
@@ -50,9 +50,10 @@ function createQueryFields(spaceGraph) {
       return acc;
     }, defaultFieldsThunk());
 
+    const interfaces = basePageTypes.includes(ct.id) ? [EntryType, BasePageType] : [EntryType]
     const Type = ctIdToType[ct.id] = new GraphQLObjectType({
       name: ct.names.type,
-      interfaces: ct.id === 'page' || ct.id === 'conceptOverviewPage' || ct.id === 'conceptPage' ? [EntryType, BasePageType] : [EntryType],
+      interfaces: interfaces,
       fields: fieldsThunk,
       isTypeOf: entry => {
         const ctId = _get(entry, ['sys', 'contentType', 'sys', 'id']);

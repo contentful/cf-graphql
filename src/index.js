@@ -13,7 +13,7 @@ module.exports = function (opts) {
   return {
     createClient: () => createClient(opts),
     prepareSpaceGraph: (contentTypes) => prepareSpaceGraph(contentTypes, opts.basePageTypes, opts.allowMultipleContentTypeFieldsForBackref),
-    createSchema: (spaceGraph, queryTypeName) => createSchema(spaceGraph, queryTypeName),
+    createSchema: (spaceGraph, queryTypeName) => createSchema(spaceGraph, queryTypeName, opts.basePageTypes),
     createQueryType: () => createQueryType,
     createQueryFields: createQueryFields,
     helpers

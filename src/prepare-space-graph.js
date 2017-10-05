@@ -32,7 +32,7 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 module.exports = prepareSpaceGraph;
 
 function prepareSpaceGraph(cts, basePageTypes = [], allowMultipleContentTypeFieldsForBackref = false) {
-  return addBackrefs(createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref));
+  return addBackrefs(createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref), basePageTypes);
 }
 
 function createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref) {
@@ -138,7 +138,8 @@ function getValidations(f) {
   }
 }
 
-function addBackrefs(spaceGraph) {
+function addBackrefs(spaceGraph, basePageTypes) {
+  basePageTypes = basePageTypes.map(type => type.endsWith('s') ? type : `${type}s`);
   const byId = spaceGraph.reduce((acc, ct) => {
     acc[ct.id] = ct;
     return acc;
@@ -152,11 +153,10 @@ function addBackrefs(spaceGraph) {
           linked.backrefs = linked.backrefs || [];
           linked.backrefs.push({
             ctId: ct.id,
-            fieldId: field.id,
             backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
           });
 
-          if (ct.names.collectionField === 'pages' || ct.names.collectionField === 'conceptPages'|| ct.names.collectionField === 'conceptOverviewPages') {
+          if (basePageTypes.includes(ct.names.collectionField)) {
             linked.backrefs.push({
               ctId: 'basePage',
               fieldId: field.id,
