@@ -158,9 +158,9 @@ function addBackrefs(spaceGraph) {
 
           if (ct.names.collectionField === 'pages' || ct.names.collectionField === 'conceptPages'|| ct.names.collectionField === 'conceptOverviewPages') {
             linked.backrefs.push({
-              ctId: 'root',
+              ctId: 'basePage',
               fieldId: field.id,
-              backrefFieldName: `roots__via__${field.id}`
+              backrefFieldName: `basePages__via__${field.id}`
             });
           }
         }

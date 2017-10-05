@@ -9,7 +9,7 @@ const {
   GraphQLString
 } = require('graphql');
 
-const { EntrySysType, EntryType, IDType, RootType } = require('./base-types.js');
+const { EntrySysType, EntryType, IDType, BasePageType } = require('./base-types.js');
 const typeFieldConfigMap = require('./field-config.js');
 const createBackrefsType = require('./backref-types.js');
 
@@ -52,7 +52,7 @@ function createQueryFields(spaceGraph) {
 
     const Type = ctIdToType[ct.id] = new GraphQLObjectType({
       name: ct.names.type,
-      interfaces: ct.id === 'page' || ct.id === 'conceptOverviewPage' || ct.id === 'conceptPage' ? [EntryType, RootType] : [EntryType],
+      interfaces: ct.id === 'page' || ct.id === 'conceptOverviewPage' || ct.id === 'conceptPage' ? [EntryType, BasePageType] : [EntryType],
       fields: fieldsThunk,
       isTypeOf: entry => {
         const ctId = _get(entry, ['sys', 'contentType', 'sys', 'id']);

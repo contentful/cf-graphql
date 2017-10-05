@@ -54,8 +54,8 @@ const AssetType = new GraphQLObjectType({
   }
 });
 
-const RootType = new GraphQLInterfaceType({
-  name: 'Root',
+const BasePageType = new GraphQLInterfaceType({
+  name: 'BasePage',
   fields: {
     sys: { type: EntrySysType },
     urlFolder: {
@@ -92,7 +92,7 @@ module.exports = {
   AssetType,
   EntryType,
   LocationType,
-  RootType
+  BasePageType
 };
 
 function createSysType(entityType, extraFields) {
@@ -100,6 +100,6 @@ function createSysType(entityType, extraFields) {
     name: `${entityType}Sys`,
     interfaces: [SysType],
     fields: Object.assign({}, baseSysFields, extraFields || {}),
-    isTypeOf: sys => { return _get(sys, ['type']) === entityType }
+    isTypeOf: sys => { return _get(sys, ['type']) === entityType; }
   }));
 }
