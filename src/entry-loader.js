@@ -48,6 +48,8 @@ function createEntryLoader(http, basePageTypes) {
 
   function queryBasePages() {
     return Promise.all(basePageTypes.map(basePageType => http.get(`contentModel/${basePageType}`, { path: 'entry' })))
-    .then(result => _flatten(result));
+    .then(result => {
+      return _flatten(result)
+    });
   }
 }

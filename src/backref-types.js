@@ -42,7 +42,7 @@ function createBackrefFieldConfig(backref, Type) {
 }
 
 function filterEntries(entries, refFieldId, entryId) {
-  var a = entries.filter(entry => {
+  return entries.filter(entry => {
     const refField = _get(entry, ['fields', refFieldId]);
 
     if (Array.isArray(refField)) {
@@ -53,5 +53,4 @@ function filterEntries(entries, refFieldId, entryId) {
       return false;
     }
   });
-  return a
 }
