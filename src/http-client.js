@@ -5,54 +5,103 @@ const qs = require('querystring');
 const fetch = require('node-fetch');
 const _get = require('lodash.get');
 
-module.exports = createClient;
+exports.createRestClient = createRestClient;
+exports.createContentfulClient = createContentfulClient;
 
-function createClient (config) {
+function createRestClient(config) {
+  const opts = Object.assign({}, createOptions(config), { spaceName: config.spaceName || '', locale: config.defaultParams.locale || '', });
+  
+  return {
+    get: (url, params) => rest(url, params, opts),
+    timeline: opts.timeline
+  };
+}
+
+function createContentfulClient(config) {
+  const opts = createOptions(config);
+
+  return {
+    get: (url, params = {}) => cfGet(url, params, opts),
+    timeline: opts.timeline
+  };
+}
+
+function createOptions(config) {
   config = config || {};
-  const opts = {
+  return {
     base: config.base || '',
     headers: config.headers || {},
     defaultParams: config.defaultParams || {},
     timeline: config.timeline || [],
     cache: config.cache || {}
   };
-
-  return {
-    get: (url, params = {}) => get(url, params, opts),
-    timeline: opts.timeline
-  };
 }
 
-function get (url, params, opts) {
+function rest(entryId, params, opts) {
+  const { base, spaceName, timeline, cache, locale } = opts;
+  const httpCall = { entryId, start: Date.now() };
+  timeline.push(httpCall);
+
+  const url = `${base}${params.path}/${spaceName}/${entryId}`;
+  const cached = cache[url];
+  if (cached) {
+    return cached;
+  }
+
+  cache[url] = fetch(url)
+  .then(checkStatus)
+  .then(res => {
+    httpCall.duration = Date.now() - httpCall.start;
+    return res.json();
+  })
+  .then(item => removeLocale(item, locale));
+
+  return cache[url];
+}
+
+function cfGet(url, params, opts) {
   const paramsWithDefaults = Object.assign({}, opts.defaultParams, params);
   const sortedQS = getSortedQS(paramsWithDefaults);
   if (typeof sortedQS === 'string' && sortedQS.length > 0) {
     url = `${url}?${sortedQS}`;
   }
 
-  const {base, headers, timeline, cache} = opts;
+  const { base, headers, timeline, cache } = opts;
   const cached = cache[url];
   if (cached) {
     return cached;
   }
 
-  const httpCall = {url, start: Date.now()};
+  const httpCall = { url, start: Date.now() };
   timeline.push(httpCall);
 
   cache[url] = fetch(
-    base + url,
-    {headers: Object.assign({}, getUserAgent(), headers)}
+    base + url, { headers: Object.assign({}, getUserAgent(), headers) }
   )
   .then(checkStatus)
   .then(res => {
-    httpCall.duration = Date.now()-httpCall.start;
+    httpCall.duration = Date.now() - httpCall.start;
     return res.json();
   });
 
   return cache[url];
 }
 
-function checkStatus (res) {
+function spliceEntryLocale(obj, locale) {
+  obj.fields = Object.keys(obj.fields).reduce((acc, item) => {
+    const prop = obj.fields[item];
+    acc[item] = prop.hasOwnProperty(locale) ? prop[locale] : prop;
+    return acc;
+  }, obj.fields);
+
+  return obj;
+}
+
+function removeLocale(obj, locale) {
+  return obj instanceof Array ? obj.map(item => spliceEntryLocale(item, locale)) : spliceEntryLocale(obj, locale);
+}
+
+function checkStatus(res) {
   if (res.status >= 200 && res.status < 300) {
     return res;
   } else {
@@ -62,7 +111,7 @@ function checkStatus (res) {
   }
 }
 
-function getSortedQS (params) {
+function getSortedQS(params) {
   return Object.keys(params).sort().reduce((acc, key) => {
     const pair = {};
     pair[key] = params[key];
@@ -70,13 +119,13 @@ function getSortedQS (params) {
   }, []).join('&');
 }
 
-function getUserAgent () {
+function getUserAgent() {
   const segments = ['app contentful.cf-graphql', getOs(), getPlatform()];
   const joined = segments.filter(s => typeof s === 'string').join('; ');
-  return {'X-Contentful-User-Agent': `${joined};`};
+  return { 'X-Contentful-User-Agent': `${joined};` };
 }
 
-function getOs () {
+function getOs() {
   const name = {
     win32: 'Windows',
     darwin: 'macOS'
@@ -88,7 +137,7 @@ function getOs () {
   }
 }
 
-function getPlatform () {
+function getPlatform() {
   const version = _get(process, ['versions', 'node']);
   if (version) {
     return `platform node.js/${version}`;

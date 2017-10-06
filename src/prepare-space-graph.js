@@ -31,23 +31,23 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 
 module.exports = prepareSpaceGraph;
 
-function prepareSpaceGraph (cts) {
-  return addBackrefs(createSpaceGraph(cts));
+function prepareSpaceGraph(cts, basePageTypes = [], allowMultipleContentTypeFieldsForBackref = false) {
+  return addBackrefs(createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref), basePageTypes);
 }
 
-function createSpaceGraph (cts) {
+function createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref) {
   const accumulatedNames = {};
 
   return cts.map(ct => ({
     id: ct.sys.id,
     names: names(ct.name, accumulatedNames),
     fields: ct.fields.reduce((acc, f) => {
-      return f.omitted ? acc : acc.concat([field(f)]);
+      return f.omitted ? acc : acc.concat([field(f, allowMultipleContentTypeFieldsForBackref)]);
     }, [])
   }));
 }
 
-function names (name, accumulatedNames) {
+function names(name, accumulatedNames) {
   const fieldName = camelCase(name);
   const typeName = upperFirst(fieldName);
 
@@ -59,7 +59,7 @@ function names (name, accumulatedNames) {
   }, accumulatedNames);
 }
 
-function checkForConflicts (names, accumulatedNames) {
+function checkForConflicts(names, accumulatedNames) {
   Object.keys(names).forEach(key => {
     const value = names[key];
     accumulatedNames[key] = accumulatedNames[key] || [];
@@ -72,7 +72,7 @@ function checkForConflicts (names, accumulatedNames) {
   return names;
 }
 
-function field (f) {
+function field(f, allowMultipleContentTypeFieldsForBackref) {
   ['sys', '_backrefs'].forEach(id => {
     if (f.id === id) {
       throw new Error(`Fields named "${id}" are unsupported`);
@@ -82,11 +82,11 @@ function field (f) {
   return {
     id: f.id,
     type: type(f),
-    linkedCt: linkedCt(f)
+    linkedCt: linkedCt(f, allowMultipleContentTypeFieldsForBackref)
   };
 }
 
-function type (f) {
+function type(f) {
   if (f.type === 'Array') {
     if (f.items.type === 'Symbol') {
       return 'Array<String>';
@@ -113,23 +113,24 @@ function type (f) {
   }
 }
 
-function isEntityType (x) {
+function isEntityType(x) {
   return ENTITY_TYPES.indexOf(x) > -1;
 }
 
-function linkedCt (f) {
+function linkedCt(f, allowMultipleContentTypeFieldsForBackref) {
   const prop = 'linkContentType';
   const validation = getValidations(f).find(v => {
-    return Array.isArray(v[prop]) && v[prop].length === 1;
+    return Array.isArray(v[prop]) && (allowMultipleContentTypeFieldsForBackref ? v[prop].length : v[prop].length === 1);
   });
-  const linkedCt = validation && validation[prop][0];
+
+  const linkedCt = validation && validation[prop];
 
   if (linkedCt) {
     return linkedCt;
   }
 }
 
-function getValidations (f) {
+function getValidations(f) {
   if (f.type === 'Array') {
     return _get(f, ['items', 'validations'], []);
   } else {
@@ -137,20 +138,33 @@ function getValidations (f) {
   }
 }
 
-function addBackrefs (spaceGraph) {
+function addBackrefs(spaceGraph, basePageTypes) {
+  basePageTypes = basePageTypes.map(type => type.endsWith('s') ? type : `${type}s`);
   const byId = spaceGraph.reduce((acc, ct) => {
     acc[ct.id] = ct;
     return acc;
   }, {});
 
   spaceGraph.forEach(ct => ct.fields.forEach(field => {
-    if (field.linkedCt && byId[field.linkedCt]) {
-      const linked = byId[field.linkedCt];
-      linked.backrefs = linked.backrefs || [];
-      linked.backrefs.push({
-        ctId: ct.id,
-        fieldId: field.id,
-        backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
+    if (field.linkedCt) {
+      field.linkedCt.forEach(link => {
+        const linked = byId[link];
+        if (linked) {
+          linked.backrefs = linked.backrefs || [];
+          linked.backrefs.push({
+            ctId: ct.id,
+            fieldId: field.id,
+            backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
+          });
+
+          if (basePageTypes.includes(ct.names.collectionField)) {
+            linked.backrefs.push({
+              ctId: 'basePage',
+              fieldId: field.id,
+              backrefFieldName: `basePages__via__${field.id}`
+            });
+          }
+        }
       });
     }
   }));

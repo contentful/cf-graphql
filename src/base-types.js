@@ -15,9 +15,9 @@ const IDType = new GraphQLNonNull(GraphQLID);
 const NonNullStringType = new GraphQLNonNull(GraphQLString);
 
 const baseSysFields = {
-  id: {type: IDType},
-  createdAt: {type: NonNullStringType},
-  updatedAt: {type: NonNullStringType}
+  id: { type: IDType },
+  createdAt: { type: NonNullStringType },
+  updatedAt: { type: NonNullStringType }
 };
 
 const entrySysFields = {
@@ -38,10 +38,10 @@ const EntrySysType = createSysType('Entry', entrySysFields);
 const AssetType = new GraphQLObjectType({
   name: 'Asset',
   fields: {
-    sys: {type: AssetSysType},
+    sys: { type: AssetSysType },
     title: {
       type: GraphQLString,
-      resolve: asset =>  _get(asset, ['fields', 'title'])
+      resolve: asset => _get(asset, ['fields', 'title'])
     },
     description: {
       type: GraphQLString,
@@ -54,16 +54,29 @@ const AssetType = new GraphQLObjectType({
   }
 });
 
+const BasePageType = new GraphQLInterfaceType({
+  name: 'BasePage',
+  fields: {
+    sys: { type: EntrySysType },
+    urlFolder: {
+      type: GraphQLString
+    },
+    url: {
+      type: GraphQLString
+    }
+  }
+});
+
 const EntryType = new GraphQLInterfaceType({
   name: 'Entry',
-  fields: {sys: {type: EntrySysType}}
+  fields: { sys: { type: EntrySysType } }
 });
 
 const LocationType = new GraphQLObjectType({
   name: 'Location',
   fields: {
-    lon: {type: GraphQLFloat},
-    lat: {type: GraphQLFloat}
+    lon: { type: GraphQLFloat },
+    lat: { type: GraphQLFloat }
   }
 });
 
@@ -74,14 +87,15 @@ module.exports = {
   EntrySysType,
   AssetType,
   EntryType,
-  LocationType
+  LocationType,
+  BasePageType
 };
 
-function createSysType (entityType, extraFields) {
+function createSysType(entityType, extraFields) {
   return new GraphQLNonNull(new GraphQLObjectType({
     name: `${entityType}Sys`,
     interfaces: [SysType],
     fields: Object.assign({}, baseSysFields, extraFields || {}),
-    isTypeOf: sys => _get(sys, ['type']) === entityType
+    isTypeOf: sys => { return _get(sys, ['type']) === entityType; }
   }));
 }

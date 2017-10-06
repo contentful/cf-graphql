@@ -1,38 +1,42 @@
 'use strict';
 
-const createHttpClient = require('./http-client.js');
+const HttpClient = require('./http-client.js');
 const createEntryLoader = require('./entry-loader.js');
-
-const CDA = 'cdn';
 const CMA = 'api';
 
 module.exports = createClient;
 
-function createClient (config) {
+function createClient(config) {
   return {
     getContentTypes: function () {
       return createContentfulClient(CMA, config)
-      .get('/content_types', {limit: 1000})
+      .get('/content_types', { limit: 1000 })
       .then(res => res.items);
     },
     createEntryLoader: function () {
-      return createEntryLoader(createContentfulClient(CDA, config));
+      return createEntryLoader(createRestClient(config), config.basePageTypes);
     }
   };
 }
 
-function createContentfulClient (api, config) {
+function createContentfulClient(api, config) {
   const protocol = config.secure !== false ? 'https' : 'http';
   const domain = config.domain || 'contentful.com';
   const base = `${protocol}://${api}.${domain}/spaces/${config.spaceId}`;
-
-  const token = api === CDA ? config.cdaToken : config.cmaToken;
-  const headers = {Authorization: `Bearer ${token}`};
-
+  const headers = {Authorization: `Bearer ${config.cmaToken}`};
   const defaultParams = {};
-  if (api === CDA && config.locale) {
+
+  return HttpClient.createContentfulClient({ base, headers, defaultParams });
+}
+
+function createRestClient(config) {
+  const base = config.host;
+  const defaultParams = {};
+  const spaceName = config.spaceName || '';
+
+  if (config.locale) {
     defaultParams.locale = config.locale;
   }
 
-  return createHttpClient({base, headers, defaultParams});
+  return HttpClient.createRestClient({ base, spaceName, defaultParams });
 }
