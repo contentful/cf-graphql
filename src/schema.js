@@ -9,7 +9,7 @@ const {
   GraphQLString
 } = require('graphql');
 
-const {EntrySysType, EntryType, IDType} = require('./base-types.js');
+const { EntrySysType, EntryType, IDType, BasePageType } = require('./base-types.js');
 const typeFieldConfigMap = require('./field-config.js');
 const createBackrefsType = require('./backref-types.js');
 
@@ -19,28 +19,28 @@ module.exports = {
   createQueryFields
 };
 
-function createSchema (spaceGraph, queryTypeName) {
+function createSchema(spaceGraph, queryTypeName, basePageTypes) {
   return new GraphQLSchema({
-    query: createQueryType(spaceGraph, queryTypeName)
+    query: createQueryType(spaceGraph, queryTypeName, basePageTypes)
   });
 }
 
-function createQueryType (spaceGraph, name = 'Query') {
+function createQueryType(spaceGraph, name = 'Query', basePageTypes) {
   return new GraphQLObjectType({
     name,
-    fields: createQueryFields(spaceGraph)
+    fields: createQueryFields(spaceGraph, basePageTypes)
   });
 }
 
-function createQueryFields (spaceGraph) {
+function createQueryFields(spaceGraph, basePageTypes = []) {
   const ctIdToType = {};
 
   return spaceGraph.reduce((acc, ct) => {
     const defaultFieldsThunk = () => {
-      const fields = {sys: {type: EntrySysType}};
+      const fields = { sys: { type: EntrySysType } };
       const BackrefsType = createBackrefsType(ct, ctIdToType);
       if (BackrefsType) {
-        fields._backrefs = {type: BackrefsType, resolve: e => e.sys.id};
+        fields._backrefs = { type: BackrefsType, resolve: e => e.sys.id };
       }
       return fields;
     };
@@ -50,9 +50,10 @@ function createQueryFields (spaceGraph) {
       return acc;
     }, defaultFieldsThunk());
 
+    const interfaces = basePageTypes.includes(ct.id) ? [EntryType, BasePageType] : [EntryType]
     const Type = ctIdToType[ct.id] = new GraphQLObjectType({
       name: ct.names.type,
-      interfaces: [EntryType],
+      interfaces: interfaces,
       fields: fieldsThunk,
       isTypeOf: entry => {
         const ctId = _get(entry, ['sys', 'contentType', 'sys', 'id']);
@@ -62,13 +63,15 @@ function createQueryFields (spaceGraph) {
 
     acc[ct.names.field] = {
       type: Type,
-      args: {id: {type: IDType}},
-      resolve: (_, args, ctx) => ctx.entryLoader.get(args.id, ct.id)
+      args: { id: { type: IDType } },
+      resolve: (_, args, ctx) => {
+        return ctx.entryLoader.get(args.id, ct.id);
+      }
     };
 
     acc[ct.names.collectionField] = {
       type: new GraphQLList(Type),
-      args: {q: {type: GraphQLString}},
+      args: { q: { type: GraphQLString } },
       resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id, args.q)
     };
 

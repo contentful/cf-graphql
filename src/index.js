@@ -1,16 +1,21 @@
 'use strict';
-
+const createClient = require('./client.js');
+const prepareSpaceGraph = require('./prepare-space-graph.js');
+const helpers = require('./helpers');
 const {
   createSchema,
   createQueryType,
   createQueryFields
 } = require('./schema.js');
 
-module.exports = {
-  createClient: require('./client.js'),
-  prepareSpaceGraph: require('./prepare-space-graph.js'),
-  createSchema,
-  createQueryType,
-  createQueryFields,
-  helpers: require('./helpers')
+module.exports = function (opts) {
+  this.opts = opts;
+  return {
+    createClient: () => createClient(opts),
+    prepareSpaceGraph: (contentTypes) => prepareSpaceGraph(contentTypes, opts.basePageTypes, opts.allowMultipleContentTypeFieldsForBackref),
+    createSchema: (spaceGraph, queryTypeName) => createSchema(spaceGraph, queryTypeName, opts.basePageTypes),
+    createQueryType: () => createQueryType,
+    createQueryFields: createQueryFields,
+    helpers
+  };
 };

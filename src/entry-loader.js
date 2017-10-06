@@ -1,11 +1,12 @@
 'use strict';
 
 const _get = require('lodash.get');
+const _flatten = require('lodash.flatten');
 const DataLoader = require('dataloader');
 
 module.exports = createEntryLoader;
 
-function createEntryLoader(http) {
+function createEntryLoader(http, basePageTypes) {
   const entryLoader = new DataLoader(loadEntries);
   const assetLoader = new DataLoader(loadAssets);
 
@@ -15,7 +16,8 @@ function createEntryLoader(http) {
     query: queryAll,
     queryAll,
     getIncludedAsset: id => assetLoader.load([id]),
-    getTimeline: () => http.timeline
+    getTimeline: () => http.timeline,
+    queryBasePages,
   };
 
   function loadEntries(ids) {
@@ -42,5 +44,12 @@ function createEntryLoader(http) {
 
   function queryAll(ctId) {
     return http.get(`contentModel/${ctId}`, { path: 'entry' });
+  }
+
+  function queryBasePages() {
+    return Promise.all(basePageTypes.map(basePageType => http.get(`contentModel/${basePageType}`, { path: 'entry' })))
+    .then(result => {
+      return _flatten(result)
+    });
   }
 }

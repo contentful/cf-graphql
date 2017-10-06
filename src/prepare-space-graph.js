@@ -31,11 +31,11 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 
 module.exports = prepareSpaceGraph;
 
-function prepareSpaceGraph (cts, allowMultipleContentTypeFieldsForBackref = false) {
-  return addBackrefs(createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref));
+function prepareSpaceGraph(cts, basePageTypes = [], allowMultipleContentTypeFieldsForBackref = false) {
+  return addBackrefs(createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref), basePageTypes);
 }
 
-function createSpaceGraph (cts, allowMultipleContentTypeFieldsForBackref) {
+function createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref) {
   const accumulatedNames = {};
 
   return cts.map(ct => ({
@@ -47,7 +47,7 @@ function createSpaceGraph (cts, allowMultipleContentTypeFieldsForBackref) {
   }));
 }
 
-function names (name, accumulatedNames) {
+function names(name, accumulatedNames) {
   const fieldName = camelCase(name);
   const typeName = upperFirst(fieldName);
 
@@ -59,7 +59,7 @@ function names (name, accumulatedNames) {
   }, accumulatedNames);
 }
 
-function checkForConflicts (names, accumulatedNames) {
+function checkForConflicts(names, accumulatedNames) {
   Object.keys(names).forEach(key => {
     const value = names[key];
     accumulatedNames[key] = accumulatedNames[key] || [];
@@ -72,7 +72,7 @@ function checkForConflicts (names, accumulatedNames) {
   return names;
 }
 
-function field (f, allowMultipleContentTypeFieldsForBackref) {
+function field(f, allowMultipleContentTypeFieldsForBackref) {
   ['sys', '_backrefs'].forEach(id => {
     if (f.id === id) {
       throw new Error(`Fields named "${id}" are unsupported`);
@@ -86,7 +86,7 @@ function field (f, allowMultipleContentTypeFieldsForBackref) {
   };
 }
 
-function type (f) {
+function type(f) {
   if (f.type === 'Array') {
     if (f.items.type === 'Symbol') {
       return 'Array<String>';
@@ -113,11 +113,11 @@ function type (f) {
   }
 }
 
-function isEntityType (x) {
+function isEntityType(x) {
   return ENTITY_TYPES.indexOf(x) > -1;
 }
 
-function linkedCt (f, allowMultipleContentTypeFieldsForBackref) {
+function linkedCt(f, allowMultipleContentTypeFieldsForBackref) {
   const prop = 'linkContentType';
   const validation = getValidations(f).find(v => {
     return Array.isArray(v[prop]) && (allowMultipleContentTypeFieldsForBackref ? v[prop].length : v[prop].length === 1);
@@ -130,7 +130,7 @@ function linkedCt (f, allowMultipleContentTypeFieldsForBackref) {
   }
 }
 
-function getValidations (f) {
+function getValidations(f) {
   if (f.type === 'Array') {
     return _get(f, ['items', 'validations'], []);
   } else {
@@ -138,7 +138,8 @@ function getValidations (f) {
   }
 }
 
-function addBackrefs (spaceGraph) {
+function addBackrefs(spaceGraph, basePageTypes) {
+  basePageTypes = basePageTypes.map(type => type.endsWith('s') ? type : `${type}s`);
   const byId = spaceGraph.reduce((acc, ct) => {
     acc[ct.id] = ct;
     return acc;
@@ -155,6 +156,14 @@ function addBackrefs (spaceGraph) {
             fieldId: field.id,
             backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
           });
+
+          if (basePageTypes.includes(ct.names.collectionField)) {
+            linked.backrefs.push({
+              ctId: 'basePage',
+              fieldId: field.id,
+              backrefFieldName: `basePages__via__${field.id}`
+            });
+          }
         }
       });
     }
