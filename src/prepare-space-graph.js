@@ -153,6 +153,7 @@ function addBackrefs(spaceGraph, basePageTypes) {
           linked.backrefs = linked.backrefs || [];
           linked.backrefs.push({
             ctId: ct.id,
+            fieldId: field.id,
             backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
           });
 
