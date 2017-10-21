@@ -36,25 +36,29 @@ test('client: config options', function (t) {
     t.deepEqual(createHttpClientStub.firstCall.args, [{
       base: 'https://api.contentful.com/spaces/SPID',
       headers: {Authorization: 'Bearer CMA-TOKEN'},
-      defaultParams: {}
+      defaultParams: {},
+      cache: null, shouldCache: null
     }]);
 
     t.deepEqual(createHttpClientStub.secondCall.args, [{
       base: 'https://cdn.contentful.com/spaces/SPID',
       headers: {Authorization: 'Bearer CDA-TOKEN'},
-      defaultParams: {}
+      defaultParams: {},
+      cache: null, shouldCache: null
     }]);
 
     t.deepEqual(createHttpClientStub.thirdCall.args, [{
       base: 'http://api.altdomain.com/spaces/SPID',
       headers: {Authorization: 'Bearer CMA-TOKEN'},
-      defaultParams: {}
+      defaultParams: {},
+      cache: null, shouldCache: null
     }]);
 
     t.deepEqual(createHttpClientStub.lastCall.args, [{
       base: 'http://cdn.altdomain.com/spaces/SPID',
       headers: {Authorization: 'Bearer CDA-TOKEN'},
-      defaultParams: {}
+      defaultParams: {},
+      cache: null, shouldCache: null
     }]);
   });
 });

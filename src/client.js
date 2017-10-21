@@ -34,5 +34,8 @@ function createContentfulClient (api, config) {
     defaultParams.locale = config.locale;
   }
 
-  return createHttpClient({base, headers, defaultParams});
+  const cache = config.cache || null;
+  const shouldCache = config.shouldCache || null;
+
+  return createHttpClient({base, headers, defaultParams, cache, shouldCache});
 }
