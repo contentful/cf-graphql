@@ -15,7 +15,7 @@ function createClient (config) {
     defaultParams: config.defaultParams || {},
     timeline: config.timeline || [],
     cache: config.cache || {},
-    shouldCache: config.shouldCache || ((url) => true)
+    shouldCache: config.shouldCache || ((url) => !!url)
   };
 
   return {
