@@ -22,44 +22,36 @@ const config = {
 const client = createClient(config);
 
 test('client: config options', function (t) {
-  t.plan(4);
+  t.plan(6);
 
   const p1 = client.getContentTypes();
   client.createEntryLoader();
 
   const alt = {secure: false, domain: 'altdomain.com'};
-  const c2 = createClient(Object.assign(alt, config));
+  const c2 = createClient(Object.assign({}, config, alt));
   const p2 = c2.getContentTypes();
   c2.createEntryLoader();
 
-  Promise.all([p1, p2]).then(() => {
-    t.deepEqual(createHttpClientStub.firstCall.args, [{
-      base: 'https://api.contentful.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CMA-TOKEN'},
-      defaultParams: {},
-      cache: null, shouldCache: null
-    }]);
+  const preview = {preview: true, cpaToken: 'CPA-TOKEN'};
+  const c3 = createClient(Object.assign({}, config, preview));
+  const p3 = c3.getContentTypes();
+  c3.createEntryLoader();
 
-    t.deepEqual(createHttpClientStub.secondCall.args, [{
-      base: 'https://cdn.contentful.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CDA-TOKEN'},
-      defaultParams: {},
-      cache: null, shouldCache: null
+  const assertCall = (i, base, token) => {
+    t.deepEqual(createHttpClientStub.getCall(i).args, [{
+      base,
+      headers: {Authorization: `Bearer ${token}-TOKEN`},
+      defaultParams: {}, cache: null, shouldCache: null
     }]);
+  };
 
-    t.deepEqual(createHttpClientStub.thirdCall.args, [{
-      base: 'http://api.altdomain.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CMA-TOKEN'},
-      defaultParams: {},
-      cache: null, shouldCache: null
-    }]);
-
-    t.deepEqual(createHttpClientStub.lastCall.args, [{
-      base: 'http://cdn.altdomain.com/spaces/SPID',
-      headers: {Authorization: 'Bearer CDA-TOKEN'},
-      defaultParams: {},
-      cache: null, shouldCache: null
-    }]);
+  Promise.all([p1, p2, p3]).then(() => {
+    assertCall(0, 'https://api.contentful.com/spaces/SPID', 'CMA');
+    assertCall(1, 'https://cdn.contentful.com/spaces/SPID', 'CDA');
+    assertCall(2, 'http://api.altdomain.com/spaces/SPID', 'CMA');
+    assertCall(3, 'http://cdn.altdomain.com/spaces/SPID', 'CDA');
+    assertCall(4, 'https://api.contentful.com/spaces/SPID', 'CMA');
+    assertCall(5, 'https://preview.contentful.com/spaces/SPID', 'CPA');
   });
 });
 

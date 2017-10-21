@@ -50,14 +50,14 @@ We host an [online demo](https://cf-graphql-demo.now.sh/) for you. You can query
 
 ### Run it locally
 
-This repository contains a demo project. The demo comes with a web server (with [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) enabled) providing the GraphQL, [an in-browser IDE(GraphiQL)](https://github.com/graphql/graphiql) and a React Frontend application using this endpoint.
+This repository contains a demo project. The demo comes with a web server (with [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) enabled) providing the GraphQL, [an in-browser IDE (GraphiQL)](https://github.com/graphql/graphiql) and a React Frontend application using this endpoint.
 
 To run it, clone the repository, install dependencies and start a server:
 
 ```
 git clone git@github.com:contentful-labs/cf-graphql.git
 cd cf-graphql/demo
-nvm use # optional, but we prefer node v6.10
+nvm use # optional, we prefer node v6 LTS
 npm install
 npm start
 ```
@@ -135,16 +135,20 @@ client.getContentTypes()
 The last step is to use the schema with a server. A popular choice is [express-graphql](https://github.com/graphql/express-graphql). The only caveat is how the context is constructed. The library expects the `entryLoader` key of the context to be set to an instance created with `client.createEntryLoader()`:
 
 ```js
-// skipped: `require` calls, Express app setup, `client` creation
-
-// `spaceGraph` was fetched and prepared in the previous snippet:
+// Skipped in snippet: `require` calls, Express app setup, `client` creation.
+// `spaceGraph` was fetched and prepared in the previous snippet. In most cases
+// you shouldn't be doing it per request, once is fine.
 const schema = cfGraphql.createSchema(spaceGraph);
-// BTW, you shouldn't be doing it per request, once is fine
 
-app.use('/graphql', graphqlHTTP(() => ({
-  schema,
-  context: {entryLoader: client.createEntryLoader()}
-})));
+// Please note we're passing a function to `graphqlHTTP`: this function will be
+// called every time a GraphQL query arrives to create a fresh entry loader.
+// You can also use `expressGraphqlExtension` described below.
+app.use('/graphql', graphqlHTTP(function () {
+  return {
+    schema,
+    context: {entryLoader: client.createEntryLoader()}
+  };
+}));
 ```
 
 [You can see a fully-fledged example in the `demo/` directory](./demo/server.js).
@@ -152,10 +156,21 @@ app.use('/graphql', graphqlHTTP(() => ({
 
 ## Querying
 
-For each content type there are two root-level fields:
+For each Contentful content type two root-level fields are created:
 
 - a singular field accepts a required `id` argument and resolves to a single entity
-- a collection field accepts an optional `q` argument and resolves to a list of entities; the `q` argument is a query string you could use with the [CDA](https://www.contentful.com/developers/docs/references/content-delivery-api/)
+- a collection field accepts an optional `q`, `skip` and `limit` arguments and resolves to a list of entities
+
+Please note that:
+
+- the `q` argument is a query string you could use with the [CDA](https://www.contentful.com/developers/docs/references/content-delivery-api/)
+- both `skip` and `limit` arguments can be used to fetch desired page of results
+  * `skip` defaults to `0`
+  * `limit` defaults to `50` and cannot be greater than `1000`
+* some query string parameters cannot be used:
+  * `skip`, `limit` - use collection field arguments instead
+  * `include`, `content_type` - no need for them, the library will determine and use appropriate values internally
+  * `locale` - configuration option will be used automatically
 
 Assuming you've got two content types named `post` and `author` with listed fields, this query is valid:
 
@@ -163,6 +178,11 @@ Assuming you've got two content types named `post` and `author` with listed fiel
 {
   authors {
     name
+  }
+
+  authors(skip: 10, limit: 10) {
+    title
+    rating
   }
 
   posts(q: "fields.rating[gt]=5") {

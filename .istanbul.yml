@@ -1,5 +1,5 @@
 instrumentation:
   include-all-sources: true
   excludes:
-    - demo/*
-    - dev/*
+    - demo/**
+    - dev/**

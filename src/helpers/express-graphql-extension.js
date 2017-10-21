@@ -16,7 +16,6 @@ function createExtension (client, schema, options = {}) {
   return function () {
     const start = Date.now();
     const entryLoader = client.createEntryLoader();
-
     return {
       context: {entryLoader},
       schema,
