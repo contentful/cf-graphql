@@ -8,7 +8,8 @@ const {
   GraphQLObjectType,
   GraphQLID,
   GraphQLInterfaceType,
-  GraphQLFloat
+  GraphQLFloat,
+  GraphQLInt
 } = require('graphql');
 
 const IDType = new GraphQLNonNull(GraphQLID);
@@ -67,6 +68,11 @@ const LocationType = new GraphQLObjectType({
   }
 });
 
+const CollectionMetaType = new GraphQLObjectType({
+  name: 'CollectionMeta',
+  fields: {count: {type: GraphQLInt}}
+});
+
 module.exports = {
   IDType,
   SysType,
@@ -74,7 +80,8 @@ module.exports = {
   EntrySysType,
   AssetType,
   EntryType,
-  LocationType
+  LocationType,
+  CollectionMetaType
 };
 
 function createSysType (entityType, extraFields) {

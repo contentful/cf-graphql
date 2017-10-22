@@ -6,10 +6,11 @@ const {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLList,
-  GraphQLString
+  GraphQLString,
+  GraphQLInt
 } = require('graphql');
 
-const {EntrySysType, EntryType, IDType} = require('./base-types.js');
+const {EntrySysType, EntryType, IDType, CollectionMetaType} = require('./base-types.js');
 const typeFieldConfigMap = require('./field-config.js');
 const createBackrefsType = require('./backref-types.js');
 
@@ -68,8 +69,18 @@ function createQueryFields (spaceGraph) {
 
     acc[ct.names.collectionField] = {
       type: new GraphQLList(Type),
+      args: {
+        q: {type: GraphQLString},
+        skip: {type: GraphQLInt},
+        limit: {type: GraphQLInt}
+      },
+      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id, args)
+    };
+
+    acc[`_${ct.names.collectionField}Meta`] = {
+      type: CollectionMetaType,
       args: {q: {type: GraphQLString}},
-      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id, args.q)
+      resolve: (_, args, ctx) => ctx.entryLoader.count(ct.id, args).then(count => ({count}))
     };
 
     return acc;

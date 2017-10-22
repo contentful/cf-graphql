@@ -7,7 +7,9 @@ const DataLoader = require('dataloader');
 
 const INCLUDE_DEPTH = 1;
 const CHUNK_SIZE = 100;
+const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 1000;
+const FORBIDDEN_QUERY_PARAMS = ['skip', 'limit', 'include', 'content_type', 'locale'];
 
 module.exports = createEntryLoader;
 
@@ -18,7 +20,8 @@ function createEntryLoader (http) {
   return {
     get: getOne,
     getMany: loader.loadMany.bind(loader),
-    query,
+    query: (ctId, args) => query(ctId, args).then(res => res.items),
+    count: (ctId, args) => query(ctId, args).then(res => res.total),
     queryAll,
     getIncludedAsset: id => assets[id],
     getTimeline: () => http.timeline
@@ -56,13 +59,20 @@ function createEntryLoader (http) {
     });
   }
 
-  function query (ctId, q) {
+  function query (ctId, {q = '', skip = 0, limit = DEFAULT_LIMIT} = {}) {
+    const parsed = qs.parse(q);
+    Object.keys(parsed).forEach(key => {
+      if (FORBIDDEN_QUERY_PARAMS.includes(key)) {
+        throw new Error(`Cannot use a query param named "${key}" here.`);
+      }
+    });
+
     const params = Object.assign({
-      limit: 100,
-      skip: 0,
+      limit,
+      skip,
       include: INCLUDE_DEPTH,
       content_type: ctId
-    }, qs.parse(q || ''));
+    }, parsed);
 
     return http.get('/entries', params).then(prime);
   }
@@ -83,7 +93,8 @@ function createEntryLoader (http) {
       return Promise.all([Promise.resolve(firstResponse)].concat(requests));
     })
     .then(responses => responses.reduce((acc, res) => {
-      return prime(res).reduce((acc, item) => {
+      prime(res);
+      return res.items.reduce((acc, item) => {
         if (!acc.some(e => e.sys.id === item.sys.id)) {
           return acc.concat([item]);
         } else {
@@ -101,6 +112,6 @@ function createEntryLoader (http) {
     _get(res, ['includes', 'Asset'], [])
     .forEach(a => assets[a.sys.id] = a);
 
-    return res.items;
+    return res;
   }
 }
