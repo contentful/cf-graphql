@@ -57,7 +57,9 @@ To run it, clone the repository, install dependencies and start a server:
 ```
 git clone git@github.com:contentful-labs/cf-graphql.git
 cd cf-graphql/demo
-nvm use # optional, we prefer node v6 LTS
+# optionally change your node version with nvm, anything 6+ should work just fine
+# we prefer node v6 matching the current AWS Lambda environment
+nvm use
 npm install
 npm start
 ```
