@@ -13,7 +13,7 @@ const ITEMS = [
 const prepare = () => {
   const getStub = sinon.stub();
   const httpStub = {get: getStub};
-  getStub.resolves({items: ITEMS});
+  getStub.resolves({items: ITEMS, total: ITEMS.length});
   return {httpStub, loader: createEntryLoader(httpStub)};
 };
 
@@ -47,11 +47,12 @@ test('entry-loader: getting many entries', function (t) {
 });
 
 test('entry-loader: querying entries', function (t) {
-  t.plan(2);
+  t.plan(3);
   const {httpStub, loader} = prepare();
 
   loader.query('ctid', {q: 'fields.someNum=123&fields.test[exists]=true'})
-  .then(() => {
+  .then(res => {
+    t.deepEqual(res, ITEMS);
     t.equal(httpStub.get.callCount, 1);
     t.deepEqual(httpStub.get.lastCall.args, ['/entries', {
       skip: 0,
@@ -61,6 +62,18 @@ test('entry-loader: querying entries', function (t) {
       'fields.someNum': '123',
       'fields.test[exists]': 'true'
     }]);
+  });
+});
+
+test('entry-loader: counting entries', function (t) {
+  t.plan(3);
+  const {httpStub, loader} = prepare();
+
+  loader.count('ctid', {q: 'fields.test=hello'})
+  .then(count => {
+    t.equal(count, ITEMS.length);
+    t.equal(httpStub.get.callCount, 1);
+    t.equal(httpStub.get.lastCall.args[1]['fields.test'], 'hello');
   });
 });
 

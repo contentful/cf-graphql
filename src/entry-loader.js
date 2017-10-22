@@ -20,7 +20,8 @@ function createEntryLoader (http) {
   return {
     get: getOne,
     getMany: loader.loadMany.bind(loader),
-    query,
+    query: (ctId, args) => query(ctId, args).then(res => res.items),
+    count: (ctId, args) => query(ctId, args).then(res => res.total),
     queryAll,
     getIncludedAsset: id => assets[id],
     getTimeline: () => http.timeline
@@ -92,7 +93,8 @@ function createEntryLoader (http) {
       return Promise.all([Promise.resolve(firstResponse)].concat(requests));
     })
     .then(responses => responses.reduce((acc, res) => {
-      return prime(res).reduce((acc, item) => {
+      prime(res);
+      return res.items.reduce((acc, item) => {
         if (!acc.some(e => e.sys.id === item.sys.id)) {
           return acc.concat([item]);
         } else {
@@ -110,6 +112,6 @@ function createEntryLoader (http) {
     _get(res, ['includes', 'Asset'], [])
     .forEach(a => assets[a.sys.id] = a);
 
-    return res.items;
+    return res;
   }
 }

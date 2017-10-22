@@ -158,10 +158,12 @@ app.use('/graphql', graphqlHTTP(function () {
 
 ## Querying
 
-For each Contentful content type two root-level fields are created:
+For each Contentful content type three root-level fields are created:
 
 - a singular field accepts a required `id` argument and resolves to a single entity
 - a collection field accepts an optional `q`, `skip` and `limit` arguments and resolves to a list of entities
+- a collection metadata field accepts an optional `q` argument and resolves to a metadata object (currently comprising only `count`)
+
 
 Please note that:
 
@@ -187,9 +189,17 @@ Assuming you've got two content types named `post` and `author` with listed fiel
     rating
   }
 
+  _authorsMeta {
+    count
+  }
+
   posts(q: "fields.rating[gt]=5") {
     title
     rating
+  }
+
+  _postsMeta(q: "fields.rating[gt]=5") {
+    count
   }
 
   post(id: "some-post-id") {

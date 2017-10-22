@@ -69,7 +69,7 @@ test('schema: querying generated schema', function (t) {
     .then(res => [entryLoader, res]);
   };
 
-  t.plan(19);
+  t.plan(22);
 
   testQuery('{ posts { title } }', {query: sinon.stub().resolves([post])})
   .then(([entryLoader, res]) => {
@@ -120,6 +120,15 @@ test('schema: querying generated schema', function (t) {
     t.equal(res.errors, undefined);
     t.deepEqual(res.data, {categories: [{_backrefs: {posts__via__category: [{title: 'Hello world'}]}}]});
   });
+
+  testQuery(
+    '{ _categoriesMeta(q: "sys.id[in]=1,2,3") { count } }',
+    {count: sinon.stub().resolves(7)}
+  ).then(([entryLoader, res]) => {
+    t.deepEqual(entryLoader.count.firstCall.args, ['catct', {q: 'sys.id[in]=1,2,3'}]);
+    t.equal(res.errors, undefined);
+    t.deepEqual(res.data, {_categoriesMeta: {count: 7}});
+  });
 });
 
 test('schema: name of query type', function (t) {
@@ -145,7 +154,7 @@ test('schema: producting query fields', function (t) {
   t.equal(typeof queryFields, 'object');
   t.deepEqual(
     Object.keys(queryFields).sort(),
-    ['post', 'posts'].sort()
+    ['post', 'posts', '_postsMeta'].sort()
   );
 
   t.end();
