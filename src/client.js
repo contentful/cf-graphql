@@ -38,9 +38,11 @@ function createContentfulClient (api, config) {
     defaultParams.locale = config.locale;
   }
 
+  const cache = config.cache || null;
+  const shouldCache = config.shouldCache || null;
   return createHttpClient({
     base: `${protocol}://${api}.${domain}/spaces/${config.spaceId}`,
     headers: {Authorization: `Bearer ${token}`},
-    defaultParams
+    defaultParams, cache, shouldCache
   });
 }

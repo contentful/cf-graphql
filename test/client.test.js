@@ -41,7 +41,7 @@ test('client: config options', function (t) {
     t.deepEqual(createHttpClientStub.getCall(i).args, [{
       base,
       headers: {Authorization: `Bearer ${token}-TOKEN`},
-      defaultParams: {}
+      defaultParams: {}, cache: null, shouldCache: null
     }]);
   };
 
