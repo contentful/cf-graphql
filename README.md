@@ -118,7 +118,9 @@ npm install --save cf-graphql
 
 Let's assume we've required this module with `const cfGraphql = require('cf-graphql')`. To create a schema out of your space you need to call `cfGraphgl.createSchema(spaceGraph)`.
 
-What is `spaceGraph`? It is a graph-like data structure containing descriptions of content types of your space which additionally provide some extra pieces of information allowing the library to create a GraphQL schema. To prepare this data structure you need to fetch raw content types data from the [CMA](https://www.contentful.com/developers/docs/references/content-management-api/) and then pass it to `cfGraphql.prepareSpaceGraph(rawCts)`:
+What is `spaceGraph`? It is a graph-like data structure containing descriptions of content types of your space which additionally provide some extra pieces of information allowing the library to create a GraphQL schema.
+
+To prepare this data structure you need to fetch raw content types data from the [CMA](https://www.contentful.com/developers/docs/references/content-management-api/). Let's create a Contentful client first:
 
 ```js
 const client = cfGraphql.createClient({
@@ -126,7 +128,17 @@ const client = cfGraphql.createClient({
   cdaToken: 'its-cda-token',
   cmaToken: 'your-cma-token'
 });
+```
 
+`spaceId`, `cdaToken` and `cmaToken` options are required. You can also pass the following options:
+
+- `locale` - a locale code to use when fetching content. If not provided, the default locale of a space is used
+- `preview` - if `true`, CPA will be used instead of CDA for fetching content
+- `cpaToken` - if `preview` is `true` then this option has to hold a CPA token
+
+Fetch content types with your `client` and then pass them to `cfGraphql.prepareSpaceGraph(rawCts)`:
+
+```js
 client.getContentTypes()
 .then(cfGraphql.prepareSpaceGraph)
 .then(spaceGraph => {
@@ -142,7 +154,7 @@ The last step is to use the schema with a server. A popular choice is [express-g
 // you shouldn't be doing it per request, once is fine.
 const schema = cfGraphql.createSchema(spaceGraph);
 
-// Please note we're passing a function to `graphqlHTTP`: this function will be
+// IMPORTANT: we're passing a function to `graphqlHTTP`: this function will be
 // called every time a GraphQL query arrives to create a fresh entry loader.
 // You can also use `expressGraphqlExtension` described below.
 app.use('/graphql', graphqlHTTP(function () {
@@ -174,7 +186,7 @@ Please note that:
 * some query string parameters cannot be used:
   * `skip`, `limit` - use collection field arguments instead
   * `include`, `content_type` - no need for them, the library will determine and use appropriate values internally
-  * `locale` - configuration option will be used automatically
+  * `locale` - all the content is fetched for a single locale. By default the default locale is used; alternate locale can be selected with the `locale` configuration option of `cfGraphql.createClient`
 
 Assuming you've got two content types named `post` and `author` with listed fields, this query is valid:
 
@@ -267,15 +279,18 @@ When using backreferences, there is a couple of things to keep in mind:
 
 ### `expressGraphqlExtension`
 
-If you're using [express-graphql](https://github.com/graphql/express-graphql) `cf-graphql` provides you an additional extension that you could use to enable additional information.
+`expressGraphqlExtension` is a simple utility producing a function that can be passed directly to the [`express-graphql` middleware](https://github.com/graphql/express-graphql).
 
 ```javascript
+// Skipped in this snippet: client and space graph creation
+const schema = cfGraphql.createSchema(spaceGraph);
+
 const opts = {
-  // retreive the current cf-graphql version
+  // display the current cf-graphql version in responses
   version: true,
-  // include timings of the underlying Contentful CDA calls
+  // include list of the underlying Contentful CDA calls with their timing
   timeline: true,
-  // format errors in a nice way
+  // display detailed error information
   detailedErrors: true
 };
 
@@ -283,53 +298,7 @@ const ext = cfGraphql.helpers.expressGraphqlExtension(client, schema, opts);
 app.use('/graphql', graphqlHTTP(ext));
 ```
 
-With this you get responses like follows:
-
-```json
-{
-  "data": { ... },
-  "extensions": {
-    "cf-graphql": {
-      "version": "0.4.2"
-    },
-    "time": 146,
-    "timeline": [
-      {
-        "url": "/entries?content_type=2wKn6yEnZewu2SCCkus4as&include=1&limit=100&skip=0",
-        "start": 2,
-        "duration": 139
-      },
-      {
-        "url": "/entries?content_type=5KMiN6YPvi42icqAUQMCQe&include=1&limit=100&skip=0",
-        "start": 2,
-        "duration": 63
-      }
-    ]
-  }
-}
-```
-
-Or enriched error information including stack traces like this:
-
-```json
-{
-  "errors": [
-    {
-      "message": "Cannot query field \"title2\" on type \"Post\". Did you mean \"title\"?",
-      "locations": [
-        {
-          "line": 3,
-          "column": 5
-        }
-      ],
-      "stack": "GraphQLError: Cannot query field \"title2\" on type \"Post\". Did you mean \"title\"?\n ..."
-    }
-  ]
-}
-```
-
-**Important: Be aware that you most likely don't want to use the enabled `timeline` and `detailedErrors` feature in a production environment.**
-
+**Important**: Most likely don't want to enable `timeline` and `detailedErrors` in your production environment.
 
 
 ### `graphiql`
