@@ -20,6 +20,12 @@ const baseSysFields = {
   updatedAt: { type: NonNullStringType }
 };
 
+const baseSysFields2 = {
+  id: { type: IDType },
+  createdAt: { type: NonNullStringType },
+  updatedAt: { type: NonNullStringType }
+};
+
 const entrySysFields = {
   contentTypeId: {
     type: IDType,
@@ -54,8 +60,8 @@ const AssetType = new GraphQLObjectType({
   }
 });
 
-const BasePageType = new GraphQLInterfaceType({
-  name: 'BasePage',
+const WebPageType = new GraphQLInterfaceType({
+  name: 'WebPage',
   fields: {
     sys: { type: EntrySysType },
     urlFolder: {
@@ -63,7 +69,11 @@ const BasePageType = new GraphQLInterfaceType({
     },
     url: {
       type: GraphQLString
-    }
+    }    
+  },
+  resolveType: (data) => {
+    const ctId = _get(data, ['sys', 'contentType', 'sys', 'id']);
+    return ctId.charAt(0).toUpperCase() + ctId.slice(1);
   }
 });
 
@@ -88,7 +98,7 @@ module.exports = {
   AssetType,
   EntryType,
   LocationType,
-  BasePageType
+  WebPageType
 };
 
 function createSysType(entityType, extraFields) {

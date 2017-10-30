@@ -9,7 +9,7 @@ const {
   GraphQLString
 } = require('graphql');
 
-const { EntrySysType, EntryType, IDType, BasePageType } = require('./base-types.js');
+const { EntrySysType, EntryType, IDType, WebPageType } = require('./base-types.js');
 const typeFieldConfigMap = require('./field-config.js');
 const createBackrefsType = require('./backref-types.js');
 
@@ -35,7 +35,7 @@ function createQueryType(spaceGraph, name = 'Query', basePageTypes) {
 function createQueryFields(spaceGraph, basePageTypes = []) {
   const ctIdToType = {};
 
-  return spaceGraph.reduce((acc, ct) => {
+  let queryFields = spaceGraph.reduce((acc, ct) => {
     const defaultFieldsThunk = () => {
       const fields = { sys: { type: EntrySysType } };
       const BackrefsType = createBackrefsType(ct, ctIdToType);
@@ -50,7 +50,7 @@ function createQueryFields(spaceGraph, basePageTypes = []) {
       return acc;
     }, defaultFieldsThunk());
 
-    const interfaces = basePageTypes.includes(ct.id) ? [EntryType, BasePageType] : [EntryType]
+    const interfaces = basePageTypes.includes(ct.id) ? [EntryType, WebPageType] : [EntryType]
     const Type = ctIdToType[ct.id] = new GraphQLObjectType({
       name: ct.names.type,
       interfaces: interfaces,
@@ -77,4 +77,15 @@ function createQueryFields(spaceGraph, basePageTypes = []) {
 
     return acc;
   }, {});
+
+  queryFields['basePage'].type.isTypeOf = entry => {
+    const ctId = _get(entry, ['sys', 'contentType', 'sys', 'id']);
+    return basePageTypes.includes(ctId);
+  };
+
+  queryFields['basePage'].resolve = (_, args, ctx) => {
+    return ctx.entryLoader.queryBasePages().then(entries => entries.find(entry => _get(entry, ['sys', 'id']) === args.id));
+  };
+
+  return queryFields;
 }

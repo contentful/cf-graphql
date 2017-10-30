@@ -2,7 +2,7 @@
 
 const _get = require('lodash.get');
 const { GraphQLObjectType, GraphQLList } = require('graphql');
-const { BasePageType } = require('./base-types.js');
+const { WebPageType } = require('./base-types.js');
 
 module.exports = createBackrefsType;
 
@@ -18,12 +18,15 @@ function prepareBackrefsFields(ct, ctIdToType) {
     const Type = ctIdToType[backref.ctId];
     if (Type) {
       acc[backref.backrefFieldName] = createBackrefFieldConfig(backref, Type);
-    } else if (backref.ctId === 'basePage') {
+    } 
+    if (backref.ctId === 'basePage') {
       acc[backref.backrefFieldName] = {
-        type: new GraphQLList(BasePageType),
+        type: new GraphQLList(WebPageType),
         resolve: (entryId, _, ctx) => {
           return ctx.entryLoader.queryBasePages(backref.ctId)
-          .then(entries => filterEntries(entries, backref.fieldId, entryId));
+          .then(entries => {
+            return filterEntries(entries, backref.fieldId, entryId)
+          });
         }
       };
     }
