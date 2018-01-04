@@ -4,6 +4,7 @@ const os = require('os');
 const qs = require('querystring');
 const fetch = require('node-fetch');
 const _get = require('lodash.get');
+const HttpProxyAgent = require('https-proxy-agent')
 
 module.exports = createClient;
 
@@ -39,9 +40,13 @@ function get (url, params, opts) {
   const httpCall = {url, start: Date.now()};
   timeline.push(httpCall);
 
+  const agent = process.env.http_proxy
+    ? new HttpProxyAgent(process.env.http_proxy)
+    : null
+
   cache[url] = fetch(
     base + url,
-    {headers: Object.assign({}, getUserAgent(), headers)}
+    {headers: Object.assign({}, getUserAgent(), headers), agent}
   )
   .then(checkStatus)
   .then(res => {
