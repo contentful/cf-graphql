@@ -23,7 +23,7 @@
     ]
   },
   "dependencies": {
-    "cf-graphql": "^0.4.3",
+    "cf-graphql": "^0.5.0",
     "cors": "^2.8.3",
     "express": "^4.15.3",
     "express-graphql": "^0.6.6",
