@@ -41,7 +41,7 @@
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^4.0.0",
     "eslint-plugin-react": "^7.1.0",
-    "now": "^7.1.0",
+    "now": "^9.2.7",
     "webpack": "^2.6.1"
   }
 }
