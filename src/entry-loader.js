@@ -47,9 +47,6 @@ function createEntryLoader(http, basePageTypes) {
   }
 
   function queryBasePages() {
-    return Promise.all(basePageTypes.map(basePageType => http.get(`contentModel/${basePageType}`, { path: 'entry' })))
-    .then(result => {
-      return _flatten(result)
-    });
+    return http.get('contentModel/basePage', { path: 'entry' });
   }
 }
