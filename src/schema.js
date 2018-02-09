@@ -4,6 +4,7 @@ const _get = require('lodash.get');
 
 const {
   GraphQLSchema,
+  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLList,
   GraphQLString,
@@ -68,7 +69,7 @@ function createQueryFields (spaceGraph) {
     };
 
     acc[ct.names.collectionField] = {
-      type: new GraphQLList(Type),
+      type: new GraphQLList(new GraphQLNonNull(Type)),
       args: {
         q: {type: GraphQLString},
         skip: {type: GraphQLInt},
