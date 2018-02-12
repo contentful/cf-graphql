@@ -38,13 +38,18 @@ function prepareSpaceGraph (cts) {
 function createSpaceGraph (cts) {
   const accumulatedNames = {};
 
-  return cts.map(ct => ({
-    id: ct.sys.id,
-    names: names(ct.name, accumulatedNames),
-    fields: ct.fields.reduce((acc, f) => {
-      return f.omitted ? acc : acc.concat([field(f)]);
-    }, [])
-  }));
+  return cts.map(ct => {
+    const { id } = ct.sys;
+    const name = /^[_a-zA-Z]/.test(id) ? upperFirst(id) : `ID_${id}`;
+
+    return {
+      id,
+      names: names(name, accumulatedNames),
+      fields: ct.fields.reduce((acc, f) => {
+        return f.omitted ? acc : acc.concat([field(f)]);
+      }, [])
+    }
+  });
 }
 
 function names (name, accumulatedNames) {
