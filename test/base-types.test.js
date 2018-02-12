@@ -44,10 +44,10 @@ test('base-types: asset', function (t) {
       fields: {
         title: 'xyz',
         description: 'asset desc',
-        file: {url: 'http://some-url'}
+        file: {url: 'http://some-url', details: {image: {width: 800, height: 600}}}
       }
     }),
-    '{ test { sys { id createdAt updatedAt } title description url } }'
+    '{ test { sys { id createdAt updatedAt } title description url width height } }'
   ).then(res => {
     t.deepEqual(res.data.test, {
       sys: {
@@ -57,7 +57,9 @@ test('base-types: asset', function (t) {
       },
       title: 'xyz',
       description: 'asset desc',
-      url: 'http://some-url'
+      url: 'http://some-url',
+      width: 800,
+      height: 600
     });
     t.equal(res.errors, undefined);
   });

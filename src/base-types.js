@@ -51,6 +51,14 @@ const AssetType = new GraphQLObjectType({
     url: {
       type: GraphQLString,
       resolve: asset => _get(asset, ['fields', 'file', 'url'])
+    },
+    width: {
+      type: GraphQLInt,
+      resolve: asset => _get(asset, [ 'fields', 'file', 'details', 'image', 'width' ])
+    },
+    height: {
+      type: GraphQLInt,
+      resolve: asset => _get(asset, [ 'fields', 'file', 'details', 'image', 'height' ])
     }
   }
 });
