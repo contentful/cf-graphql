@@ -52,6 +52,7 @@
   "dependencies": {
     "dataloader": "^1.3.0",
     "graphql": "^0.11.7",
+    "https-proxy-agent": "^2.1.1",
     "lodash.camelcase": "^4.3.0",
     "lodash.chunk": "^4.2.0",
     "lodash.get": "^4.4.2",
