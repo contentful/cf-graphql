@@ -75,7 +75,7 @@ function createEntryFieldConfig (field, ctIdToType) {
   return createFieldConfig(typeFor(field, ctIdToType), field, (link, ctx) => {
     const linkedId = getLinkedId(link);
     if (isString(linkedId)) {
-      return ctx.entryLoader.get(linkedId, field.linkedCt);
+      return ctx.entryLoader.get(linkedId, field.linkedCts && field.linkedCts[0]);
     }
   });
 }
@@ -95,9 +95,9 @@ function getLinkedId (link) {
   return _get(link, ['sys', 'id']);
 }
 
-function typeFor ({linkedCt}, ctIdToType = {}) {
-  if (linkedCt) {
-    return ctIdToType[linkedCt] || EntryType;
+function typeFor ({linkedCts}, ctIdToType = {}) {
+  if (linkedCts && linkedCts[0]) {
+    return ctIdToType[linkedCts[0]] || EntryType;
   } else {
     return EntryType;
   }

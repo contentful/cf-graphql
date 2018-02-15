@@ -25,7 +25,7 @@ const postct = {
   fields: [
     {id: 'title', type: 'String'},
     {id: 'content', type: 'String'},
-    {id: 'category', type: 'Link<Entry>', linkedCt: 'catct'}
+    {id: 'category', type: 'Link<Entry>', linkedCts: ['catct']}
   ]
 };
 
@@ -113,11 +113,11 @@ test('schema: querying generated schema', function (t) {
 
   testQuery(
     '{ categories { _backrefs { posts__via__category { title } } } }',
-    {query: sinon.stub().resolves([category]), queryAll: sinon.stub().resolves([post])}
+    {query: sinon.stub().onCall(0).resolves([category]).onCall(1).resolves([post])}
   ).then(([entryLoader, res]) => {
-    t.deepEqual(entryLoader.query.firstCall.args, ['catct', {}]);
-    t.deepEqual(entryLoader.queryAll.firstCall.args, ['postct']);
     t.equal(res.errors, undefined);
+    t.deepEqual(entryLoader.query.firstCall.args, ['catct', {}]);
+    t.deepEqual(entryLoader.query.lastCall.args[0], 'postct');
     t.deepEqual(res.data, {categories: [{_backrefs: {posts__via__category: [{title: 'Hello world'}]}}]});
   });
 

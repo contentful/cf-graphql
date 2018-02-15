@@ -82,7 +82,7 @@ function field (f) {
   return {
     id: f.id,
     type: type(f),
-    linkedCt: linkedCt(f)
+    linkedCts: linkedCts(f)
   };
 }
 
@@ -117,15 +117,15 @@ function isEntityType (x) {
   return ENTITY_TYPES.indexOf(x) > -1;
 }
 
-function linkedCt (f) {
+function linkedCts (f) {
   const prop = 'linkContentType';
   const validation = getValidations(f).find(v => {
-    return Array.isArray(v[prop]) && v[prop].length === 1;
+    return Array.isArray(v[prop]);
   });
-  const linkedCt = validation && validation[prop][0];
+  const linkedCts = validation && validation[prop];
 
-  if (linkedCt) {
-    return linkedCt;
+  if (linkedCts) {
+    return linkedCts;
   }
 }
 
@@ -144,15 +144,16 @@ function addBackrefs (spaceGraph) {
   }, {});
 
   spaceGraph.forEach(ct => ct.fields.forEach(field => {
-    if (field.linkedCt && byId[field.linkedCt]) {
-      const linked = byId[field.linkedCt];
+    if (field.linkedCts) field.linkedCts.forEach(linkedCt => {
+      const linked = byId[linkedCt];
+      if (!linked) return;
       linked.backrefs = linked.backrefs || [];
       linked.backrefs.push({
         ctId: ct.id,
         fieldId: field.id,
-        backrefFieldName: `${ct.names.collectionField}__via__${field.id}`
+        backrefFieldName: `${ct.names.collectionField}__via__${field.id}`,
       });
-    }
+    });
   }));
 
   return spaceGraph;
