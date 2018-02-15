@@ -83,7 +83,14 @@ test('backref-types: creating backrefers type', function (t) {
     }
   ];
 
-  const ctx = {entryLoader: {queryAll: () => Promise.resolve(posts)}};
+  const ctx = {entryLoader: {query: (ctId, {q}) => {
+    const field = q.match(/^fields\.([^\.]*)\.sys\.id/)[1]
+    const id = q.match(/=(.*)$/)[1]
+    return Promise.resolve(posts.filter(post => {
+      const f = post.fields[field]
+      return f != null && (Array.isArray(f) ? f : [f]).find(item => item.sys.id === id)
+    }));
+  }}};
 
   graphql(
     schema,
@@ -91,8 +98,8 @@ test('backref-types: creating backrefers type', function (t) {
     null,
     ctx
   ).then(res => {
+    t.equal(res.errors, undefined);
     t.deepEqual(res.data.test.posts__via__category, [{title: 'p1t'}]);
     t.deepEqual(res.data.test.posts__via__category2, [{title: 'p3t'}]);
-    t.equal(res.errors, undefined);
   });
 });

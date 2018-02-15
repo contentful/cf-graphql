@@ -2,6 +2,7 @@
 
 const test = require('tape');
 
+const flatmap = require('lodash/flatmap');
 const prepareSpaceGraph = require('../src/prepare-space-graph.js');
 
 const testCt = fields => ({sys: {id: 'ctid'}, name: 'test', fields});
@@ -155,9 +156,9 @@ test('prepare-space-graph: finding linked content types', function (t) {
   }, []);
 
   const [p] = prepareSpaceGraph([testCt(fields)]);
-  const linkedCts = p.fields.map(f => f.linkedCt).filter(id => typeof id === 'string');
+  const linkedCts = flatmap(p.fields, f => f.linkedCts).filter(id => typeof id === 'string');
 
-  t.deepEqual(linkedCts, ['baz', 'baz']);
+  t.deepEqual(linkedCts, ['foo', 'bar', 'foo', 'bar', 'baz', 'baz']);
 
   t.end();
 });
@@ -167,7 +168,7 @@ test('prepare-space-graph: mixing field and items validations', function (t) {
   const fields = [{id: 'fid', type: 'Array', validations: [], items}];
   const [p] = prepareSpaceGraph([testCt(fields)]);
 
-  t.equal(p.fields[0].linkedCt, 'ctid');
+  t.equal(p.fields[0].linkedCts[0], 'ctid');
 
   t.end();
 });
