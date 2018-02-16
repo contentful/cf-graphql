@@ -31,18 +31,18 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 
 module.exports = prepareSpaceGraph;
 
-function prepareSpaceGraph (cts) {
-  return addBackrefs(createSpaceGraph(cts));
+function prepareSpaceGraph (cts, options) {
+  return addBackrefs(createSpaceGraph(cts, options));
 }
 
-function createSpaceGraph (cts) {
+function createSpaceGraph (cts, options) {
   const accumulatedNames = {};
 
   return cts.map(ct => ({
     id: ct.sys.id,
     names: names(ct.name, accumulatedNames),
     fields: ct.fields.reduce((acc, f) => {
-      return f.omitted ? acc : acc.concat([field(f)]);
+      return f.omitted ? acc : acc.concat([field(f, options.enforceRequiredFields)]);
     }, [])
   }));
 }
@@ -72,7 +72,7 @@ function checkForConflicts (names, accumulatedNames) {
   return names;
 }
 
-function field (f) {
+function field (f, enforceRequiredFields) {
   ['sys', '_backrefs'].forEach(id => {
     if (f.id === id) {
       throw new Error(`Fields named "${id}" are unsupported`);
@@ -81,7 +81,7 @@ function field (f) {
 
   return {
     id: f.id,
-    required: f.required,
+    required: enforceRequiredFields && f.required,
     type: type(f),
     linkedCt: linkedCt(f)
   };
