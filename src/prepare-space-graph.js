@@ -32,7 +32,7 @@ const SIMPLE_FIELD_TYPE_MAPPING = {
 module.exports = prepareSpaceGraph;
 
 function prepareSpaceGraph (cts, options) {
-  return addBackrefs(createSpaceGraph(cts, options));
+  return addBackrefs(createSpaceGraph(cts, options || {}));
 }
 
 function createSpaceGraph (cts, options) {
