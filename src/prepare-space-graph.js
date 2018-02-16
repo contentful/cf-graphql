@@ -81,6 +81,7 @@ function field (f) {
 
   return {
     id: f.id,
+    required: f.required,
     type: type(f),
     linkedCt: linkedCt(f)
   };
