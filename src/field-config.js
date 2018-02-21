@@ -96,7 +96,7 @@ function getLinkedId (link) {
 }
 
 function typeFor ({linkedCts}, ctIdToType = {}) {
-  if (linkedCts && linkedCts[0]) {
+  if (linkedCts && linkedCts.length === 1) {
     return ctIdToType[linkedCts[0]] || EntryType;
   } else {
     return EntryType;
