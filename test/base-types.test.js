@@ -19,13 +19,14 @@ test('base-types: asset', function (t) {
   });
 
   graphql(
-    createSchema({sys: {type: 'Asset', id: 'aid'}}),
-    '{ test { sys { id } title description } }'
+    createSchema({sys: {type: 'Asset', id: 'aid'}, fields: {title: 'tt', file: {url: 'file://xxx'}}}),
+    '{ test { sys { id } title description url } }'
   ).then(res => {
     t.deepEqual(res.data.test, {
       sys: {id: 'aid'},
-      title: null,
-      description: null
+      title: 'tt',
+      description: null,
+      url: 'file://xxx'
     });
     t.equal(res.errors, undefined);
   });

@@ -41,16 +41,16 @@ const AssetType = new GraphQLObjectType({
   fields: {
     sys: {type: AssetSysType},
     title: {
-      type: GraphQLString,
-      resolve: asset =>  _get(asset, ['fields', 'title'])
+      type: NonNullStringType,
+      resolve: asset => asset.fields.title
     },
     description: {
       type: GraphQLString,
       resolve: asset => _get(asset, ['fields', 'description'])
     },
     url: {
-      type: GraphQLString,
-      resolve: asset => _get(asset, ['fields', 'file', 'url'])
+      type: NonNullStringType,
+      resolve: asset => asset.fields.file.url
     }
   }
 });
