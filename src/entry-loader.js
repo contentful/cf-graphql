@@ -9,6 +9,7 @@ module.exports = createEntryLoader;
 function createEntryLoader(http, basePageTypes) {
   const entryLoader = new DataLoader(loadEntries);
   const assetLoader = new DataLoader(loadAssets);
+  const entriesByPageTypeLoader = new DataLoader(loadEntriesByPageType);
 
   return {
     get: getOne,
@@ -30,6 +31,11 @@ function createEntryLoader(http, basePageTypes) {
     return Promise.all(requests);
   }
 
+  function loadEntriesByPageType(contentTypeIds) {
+    const requests = contentTypeIds.map(ctId => http.get(`contentModel/${ctId}`, { path: 'entry' }));
+    return Promise.all(requests);
+  }
+
   function getOne(id, forcedCtId) {
     return entryLoader.load(id)
     .then(res => {
@@ -43,10 +49,10 @@ function createEntryLoader(http, basePageTypes) {
   }
 
   function queryAll(ctId) {
-    return http.get(`contentModel/${ctId}`, { path: 'entry' });
+    return entriesByPageTypeLoader.load(ctId);
   }
 
   function queryBasePages() {
-    return http.get('contentModel/basePage', { path: 'entry' });
+    return entriesByPageTypeLoader.load('basePage');
   }
 }
