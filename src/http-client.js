@@ -4,20 +4,26 @@ const os = require('os');
 const qs = require('querystring');
 const fetch = require('node-fetch');
 const _get = require('lodash.get');
+const request = require('tuin-request').defaults({
+  json: true
+}).retry({
+  on: err => console.log(`Retrying ${err.options.uri} (${err.message})`),
+  retries: 5
+});
 
 exports.createRestClient = createRestClient;
 exports.createContentfulClient = createContentfulClient;
 
-function createRestClient(config) {
+function createRestClient (config) {
   const opts = Object.assign({}, createOptions(config), { spaceName: config.spaceName || '', locale: config.defaultParams.locale || '', });
-  
+
   return {
     get: (url, params) => rest(url, params, opts),
     timeline: opts.timeline
   };
 }
 
-function createContentfulClient(config) {
+function createContentfulClient (config) {
   const opts = createOptions(config);
 
   return {
@@ -26,7 +32,7 @@ function createContentfulClient(config) {
   };
 }
 
-function createOptions(config) {
+function createOptions (config) {
   config = config || {};
   return {
     base: config.base || '',
@@ -37,7 +43,7 @@ function createOptions(config) {
   };
 }
 
-function rest(entryId, params, opts) {
+function rest (entryId, params, opts) {
   const { base, spaceName, timeline, cache, locale } = opts;
   const httpCall = { entryId, start: Date.now() };
   timeline.push(httpCall);
@@ -48,18 +54,18 @@ function rest(entryId, params, opts) {
     return cached;
   }
 
-  cache[url] = fetch(url)
-  .then(checkStatus)
-  .then(res => {
-    httpCall.duration = Date.now() - httpCall.start;
-    return res.json();
-  })
-  .then(item => removeLocale(item, locale));
+  cache[url] = request.get(url)
+    .then(res => {
+      httpCall.duration = Date.now() - httpCall.start;
+      return res;
+    })
+    .then(item => removeLocale(item, locale));
 
   return cache[url];
 }
 
-function cfGet(url, params, opts) {
+
+function cfGet (url, params, opts) {
   const paramsWithDefaults = Object.assign({}, opts.defaultParams, params);
   const sortedQS = getSortedQS(paramsWithDefaults);
   if (typeof sortedQS === 'string' && sortedQS.length > 0) {
@@ -78,16 +84,16 @@ function cfGet(url, params, opts) {
   cache[url] = fetch(
     base + url, { headers: Object.assign({}, getUserAgent(), headers) }
   )
-  .then(checkStatus)
-  .then(res => {
-    httpCall.duration = Date.now() - httpCall.start;
-    return res.json();
-  });
+    .then(checkStatus)
+    .then(res => {
+      httpCall.duration = Date.now() - httpCall.start;
+      return res.json();
+    });
 
   return cache[url];
 }
 
-function spliceEntryLocale(obj, locale) {
+function spliceEntryLocale (obj, locale) {
   obj.fields = Object.keys(obj.fields).reduce((acc, item) => {
     const prop = obj.fields[item];
     acc[item] = prop.hasOwnProperty(locale) ? prop[locale] : prop;
@@ -97,11 +103,11 @@ function spliceEntryLocale(obj, locale) {
   return obj;
 }
 
-function removeLocale(obj, locale) {
+function removeLocale (obj, locale) {
   return obj instanceof Array ? obj.map(item => spliceEntryLocale(item, locale)) : spliceEntryLocale(obj, locale);
 }
 
-function checkStatus(res) {
+function checkStatus (res) {
   if (res.status >= 200 && res.status < 300) {
     return res;
   } else {
@@ -111,7 +117,7 @@ function checkStatus(res) {
   }
 }
 
-function getSortedQS(params) {
+function getSortedQS (params) {
   return Object.keys(params).sort().reduce((acc, key) => {
     const pair = {};
     pair[key] = params[key];
@@ -119,13 +125,13 @@ function getSortedQS(params) {
   }, []).join('&');
 }
 
-function getUserAgent() {
+function getUserAgent () {
   const segments = ['app contentful.cf-graphql', getOs(), getPlatform()];
   const joined = segments.filter(s => typeof s === 'string').join('; ');
   return { 'X-Contentful-User-Agent': `${joined};` };
 }
 
-function getOs() {
+function getOs () {
   const name = {
     win32: 'Windows',
     darwin: 'macOS'
@@ -137,7 +143,7 @@ function getOs() {
   }
 }
 
-function getPlatform() {
+function getPlatform () {
   const version = _get(process, ['versions', 'node']);
   if (version) {
     return `platform node.js/${version}`;
