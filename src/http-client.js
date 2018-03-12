@@ -5,7 +5,8 @@ const qs = require('querystring');
 const fetch = require('node-fetch');
 const _get = require('lodash.get');
 const request = require('tuin-request').defaults({
-  json: true
+  json: true,
+  gzip: true
 }).retry({
   on: err => console.log(`Retrying ${err.options.uri} (${err.message})`),
   retries: 5
