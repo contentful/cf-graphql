@@ -49,7 +49,7 @@ function rest (entryId, params, opts) {
   const httpCall = { entryId, start: Date.now() };
   timeline.push(httpCall);
 
-  const url = `${base}${params.path}/${spaceName}/${entryId}`;
+  const url = `${base}${params.path}/${spaceName}/${entryId}?${params.queryParams || ''}`;
   const cached = cache[url];
   if (cached) {
     return cached;
