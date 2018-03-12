@@ -53,6 +53,7 @@ function createQueryFields(spaceGraph, basePageTypes = []) {
     const interfaces = basePageTypes.includes(ct.id) ? [EntryType, WebPageType] : [EntryType]
     const Type = ctIdToType[ct.id] = new GraphQLObjectType({
       name: ct.names.type,
+      referenceFields: ct.referenceFields,
       interfaces: interfaces,
       fields: fieldsThunk,
       isTypeOf: entry => {
@@ -84,7 +85,7 @@ function createQueryFields(spaceGraph, basePageTypes = []) {
   };
 
   queryFields['basePage'].resolve = (_, args, ctx) => {
-    return ctx.entryLoader.queryBasePages().then(entries => entries.find(entry => _get(entry, ['sys', 'id']) === args.id));
+    return ctx.entryLoader.queryBasePages('basePage', queryFields['basePage'].type['_typeConfig'].referenceFields).then(entries => entries.find(entry => _get(entry, ['sys', 'id']) === args.id));
   };
 
   return queryFields;

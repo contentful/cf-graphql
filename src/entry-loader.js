@@ -10,6 +10,7 @@ function createEntryLoader(http, basePageTypes) {
   const entryLoader = new DataLoader(loadEntries);
   const assetLoader = new DataLoader(loadAssets);
   const entriesByPageTypeLoader = new DataLoader(loadEntriesByPageType);
+  const entriesByBasePageLoader = new DataLoader(loadEntriesByBasePage)
 
   return {
     get: getOne,
@@ -32,7 +33,12 @@ function createEntryLoader(http, basePageTypes) {
   }
 
   function loadEntriesByPageType(contentTypeIds) {
-    const requests = contentTypeIds.map(ctId => http.get(`contentModel/${ctId}`, { path: 'entry' }));
+    const requests = contentTypeIds.map(ctId => http.get(`contentModel/${ctId}`, { path: 'entry', queryParams: ctId === 'basePage' || basePageTypes.includes(ctId) ? 'slimEntry=true' : 'slimEntry=false' }));
+    return Promise.all(requests);
+  }
+
+  function loadEntriesByBasePage(queryParams) {
+    const requests = queryParams.map(queryParam => http.get(`contentModel/basePage`, { path: 'entry', queryParams: queryParam }));
     return Promise.all(requests);
   }
 
@@ -52,7 +58,7 @@ function createEntryLoader(http, basePageTypes) {
     return entriesByPageTypeLoader.load(ctId);
   }
 
-  function queryBasePages() {
-    return entriesByPageTypeLoader.load('basePage');
+  function queryBasePages(ctId, fields) {
+    return entriesByBasePageLoader.load(`slimEntry=true&fields=${fields.join(',')}`);
   }
 }

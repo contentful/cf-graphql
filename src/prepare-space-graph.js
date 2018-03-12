@@ -42,7 +42,8 @@ function createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref, basePag
     cts.push({
       sys: { id: 'basePage' },
       name: 'BasePage',
-      fields: basePage.fields.filter(f => f.id === 'urlFolder' || f.id === 'url')
+      fields: basePage.fields.filter(f => f.id === 'urlFolder' || f.id === 'url'),
+      referenceFields: require('lodash.flatten')(cts.map(x=> x.fields.filter(y=>y.linkType === 'Entry' || y.items && y.items.linkType === 'Entry').map(x=>x.id))).filter((v, i, a) => a.indexOf(v) === i)
     });
   }
 
@@ -51,7 +52,8 @@ function createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref, basePag
     names: names(ct.name, accumulatedNames),
     fields: ct.fields.reduce((acc, f) => {
       return f.omitted ? acc : acc.concat([field(f, allowMultipleContentTypeFieldsForBackref, basePageTypes)]);
-    }, [])
+    }, []),
+    referenceFields: ct.referenceFields || [] 
   }));
 }
 

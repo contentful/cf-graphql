@@ -23,9 +23,9 @@ function prepareBackrefsFields(ct, ctIdToType) {
       acc[backref.backrefFieldName] = {
         type: new GraphQLList(WebPageType),
         resolve: (entryId, _, ctx) => {
-          return ctx.entryLoader.queryBasePages(backref.ctId)
+          return ctx.entryLoader.queryBasePages(backref.ctId, Type['_typeConfig'].referenceFields);
           .then(entries => {
-            return filterEntries(entries, backref.fieldId, entryId)
+            return filterEntries(entries, backref.fieldId, entryId);
           });
         }
       };
