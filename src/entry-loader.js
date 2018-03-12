@@ -9,7 +9,6 @@ module.exports = createEntryLoader;
 function createEntryLoader(http, basePageTypes) {
   const entryLoader = new DataLoader(loadEntries);
   const assetLoader = new DataLoader(loadAssets);
-  const entriesByPageTypeLoader = new DataLoader(loadEntriesByPageType);
   const entriesByBasePageLoader = new DataLoader(loadEntriesByBasePage)
 
   return {
@@ -32,13 +31,8 @@ function createEntryLoader(http, basePageTypes) {
     return Promise.all(requests);
   }
 
-  function loadEntriesByPageType(contentTypeIds) {
-    const requests = contentTypeIds.map(ctId => http.get(`contentModel/${ctId}`, { path: 'entry', queryParams: ctId === 'basePage' || basePageTypes.includes(ctId) ? 'slimEntry=true' : 'slimEntry=false' }));
-    return Promise.all(requests);
-  }
-
   function loadEntriesByBasePage(queryParams) {
-    const requests = queryParams.map(queryParam => http.get(`contentModel/basePage`, { path: 'entry', queryParams: queryParam }));
+    const requests = queryParams.map(queryParam => http.get('contentModel/basePage', { path: 'entry', queryParams: queryParam }));
     return Promise.all(requests);
   }
 
@@ -54,8 +48,8 @@ function createEntryLoader(http, basePageTypes) {
     });
   }
 
-  function queryAll(ctId) {
-    return entriesByPageTypeLoader.load(ctId);
+  function queryAll(ctId, fields) {
+    return http.get(`contentModel/${ctId}`, { path: 'entry', queryParams: basePageTypes.includes(ctId) ? 'slimEntry=true&fields=' + fields.join(',') : 'slimEntry=false' })
   }
 
   function queryBasePages(ctId, fields) {

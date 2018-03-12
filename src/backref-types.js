@@ -38,7 +38,7 @@ function createBackrefFieldConfig(backref, Type) {
   return {
     type: new GraphQLList(Type),
     resolve: (entryId, _, ctx) => {
-      return ctx.entryLoader.queryAll(backref.ctId)
+      return ctx.entryLoader.queryAll(backref.ctId, Type['_typeConfig'].referenceFields)
       .then(entries => filterEntries(entries, backref.fieldId, entryId));
     }
   };

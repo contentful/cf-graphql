@@ -45,6 +45,11 @@ function createSpaceGraph(cts, allowMultipleContentTypeFieldsForBackref, basePag
       fields: basePage.fields.filter(f => f.id === 'urlFolder' || f.id === 'url'),
       referenceFields: require('lodash.flatten')(cts.map(x=> x.fields.filter(y=>y.linkType === 'Entry' || y.items && y.items.linkType === 'Entry').map(x=>x.id))).filter((v, i, a) => a.indexOf(v) === i)
     });
+    cts.forEach(ct => {
+      if (basePageTypes.includes(ct.sys.id)) {
+        Object.assign(ct, { referenceFields: ct.fields.filter(y=>y.linkType === 'Entry' || y.items && y.items.linkType === 'Entry').map(x=>x.id) })
+      }
+    });
   }
 
   return cts.map(ct => ({
@@ -137,7 +142,7 @@ function linkedCt(f, allowMultipleContentTypeFieldsForBackref, basePageTypes) {
 
   if (linkedCt) {
     if (linkedCt.find(x => basePageTypes.includes(x))) {
-      linkedCt.push('basePage')
+      linkedCt.push('basePage');
     }
     return linkedCt;
   }
