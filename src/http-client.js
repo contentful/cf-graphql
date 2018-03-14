@@ -13,8 +13,7 @@ function createClient (config) {
     base: config.base || '',
     headers: config.headers || {},
     defaultParams: config.defaultParams || {},
-    timeline: config.timeline || [],
-    cache: config.cache || {}
+    timeline: config.timeline || []
   };
 
   return {
@@ -30,16 +29,12 @@ function get (url, params, opts) {
     url = `${url}?${sortedQS}`;
   }
 
-  const {base, headers, timeline, cache} = opts;
-  const cached = cache[url];
-  if (cached) {
-    return cached;
-  }
+  const {base, headers, timeline} = opts;
 
   const httpCall = {url, start: Date.now()};
   timeline.push(httpCall);
 
-  cache[url] = fetch(
+  const res = fetch(
     base + url,
     {headers: Object.assign({}, getUserAgent(), headers)}
   )
@@ -49,7 +44,7 @@ function get (url, params, opts) {
     return res.json();
   });
 
-  return cache[url];
+  return res;
 }
 
 function checkStatus (res) {
