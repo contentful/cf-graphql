@@ -38,11 +38,11 @@ function get (url, params, opts) {
     base + url,
     {headers: Object.assign({}, getUserAgent(), headers)}
   )
-    .then(checkStatus)
-    .then(res => {
-      httpCall.duration = Date.now()-httpCall.start;
-      return res.json();
-    });
+  .then(checkStatus)
+  .then(res => {
+    httpCall.duration = Date.now()-httpCall.start;
+    return res.json();
+  });
 
   return res;
 }
