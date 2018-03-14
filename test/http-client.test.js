@@ -85,7 +85,7 @@ test('http-client: non 2xx response codes', function (t) {
   });
 });
 
-test('http-client: reuses already fired requests', function (t) {
+test('http-client: does *not* reuse already fired requests', function (t) {
   t.plan(2);
   const {fetch, http} = prepare();
 
@@ -94,8 +94,8 @@ test('http-client: reuses already fired requests', function (t) {
 
   Promise.all([p1, http.get('/two'), p2])
   .then(() => {
-    t.equal(p1, p2);
-    t.equal(fetch.callCount, 2);
+    t.notEqual(p1, p2);
+    t.equal(fetch.callCount, 3);
   });
 });
 
@@ -108,10 +108,10 @@ test('http-client: sorts parameters', function (t) {
 
   Promise.all([p1, http.get('/two', {omega: true, alfa: false}), p2])
   .then(() => {
-    t.equal(p1, p2);
-    t.equal(fetch.callCount, 2);
+    t.notEqual(p1, p2);
+    t.equal(fetch.callCount, 3);
     t.equal(fetch.firstCall.args[0], 'http://test.com/one?a=456&z=123');
-    t.equal(fetch.secondCall.args[0], 'http://test.com/two?alfa=false&omega=true');
+    t.equal(fetch.thirdCall.args[0], 'http://test.com/two?alfa=false&omega=true');
   });
 });
 
