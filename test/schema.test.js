@@ -159,3 +159,17 @@ test('schema: producting query fields', function (t) {
 
   t.end();
 });
+
+test('schema: throws an error without entryLoader', function(t) {
+  const queryFields = createQueryFields([postct]);
+
+  t.throws(function() {
+    queryFields.post.resolve();
+  }, TypeError, 'throws without a context');
+
+  t.throws(function() {
+    queryFields.post.resolve(null, null, {});
+  }, TypeError, 'throws without entryLoader on context');
+
+  t.end();
+});
