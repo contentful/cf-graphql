@@ -13,6 +13,7 @@ const {
 const {EntrySysType, EntryType, IDType, CollectionMetaType} = require('./base-types.js');
 const typeFieldConfigMap = require('./field-config.js');
 const createBackrefsType = require('./backref-types.js');
+const entryLoaderError = '\'entryLoader\' must be defined on the context.';
 
 module.exports = {
   createSchema,
@@ -64,7 +65,12 @@ function createQueryFields (spaceGraph) {
     acc[ct.names.field] = {
       type: Type,
       args: {id: {type: IDType}},
-      resolve: (_, args, ctx) => ctx.entryLoader.get(args.id, ct.id)
+      resolve: (_, args, ctx) => {
+        if (!ctx || !ctx.entryLoader) {
+          throw new TypeError(entryLoaderError);
+        }
+        return ctx.entryLoader.get(args.id, ct.id);
+      }
     };
 
     acc[ct.names.collectionField] = {
@@ -74,13 +80,23 @@ function createQueryFields (spaceGraph) {
         skip: {type: GraphQLInt},
         limit: {type: GraphQLInt}
       },
-      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id, args)
+      resolve: (_, args, ctx) => {
+        if (!ctx || !ctx.entryLoader) {
+          throw new TypeError(entryLoaderError);
+        }
+        return ctx.entryLoader.query(ct.id, args);
+      }
     };
 
     acc[`_${ct.names.collectionField}Meta`] = {
       type: CollectionMetaType,
       args: {q: {type: GraphQLString}},
-      resolve: (_, args, ctx) => ctx.entryLoader.count(ct.id, args).then(count => ({count}))
+      resolve: (_, args, ctx) => {
+        if (!ctx || !ctx.entryLoader) {
+          throw new TypeError(entryLoaderError);
+        }
+        return ctx.entryLoader.count(ct.id, args).then(count => ({count}));
+      }
     };
 
     return acc;
