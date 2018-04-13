@@ -9,7 +9,7 @@ const request = require('tuin-request').defaults({
   gzip: true
 }).retry({
   on: err => console.log(`Retrying ${err.options.uri} (${err.message})`),
-  retries: 10
+  retries: 4
 });
 
 exports.createRestClient = createRestClient;
