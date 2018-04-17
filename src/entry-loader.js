@@ -6,7 +6,8 @@ const qs = require('querystring');
 const DataLoader = require('dataloader');
 
 const INCLUDE_DEPTH = 1;
-const CHUNK_SIZE = 100;
+const CHUNK_SIZE = 70;
+// Chunk size may be unreliable. If wrong, may get "Bad Request" from graphQL
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 1000;
 const FORBIDDEN_QUERY_PARAMS = ['skip', 'limit', 'include', 'content_type', 'locale'];
