@@ -72,9 +72,18 @@ function createQueryFields (spaceGraph) {
       args: {
         q: {type: GraphQLString},
         skip: {type: GraphQLInt},
-        limit: {type: GraphQLInt}
+        limit: {type: GraphQLInt},
+        ids: {type: new GraphQLList(IDType)},
       },
-      resolve: (_, args, ctx) => ctx.entryLoader.query(ct.id, args)
+      resolve: (_, args, ctx) => {
+        const {ids} = args
+        if (ids) {
+          return ctx.entryLoader.getMany(ids)
+          .then(objs => objs.filter(obj => obj && obj.sys.contentType.sys.id === ct.id))
+        } else {
+          return ctx.entryLoader.query(ct.id, args)
+        }
+      }
     };
 
     acc[`_${ct.names.collectionField}Meta`] = {

@@ -121,12 +121,12 @@ test('field-config: type for linked entry', function (t) {
   const types = {ct1: {}, ct2: {}};
   const tests = [
     [{}, undefined, EntryType],
-    [{linkedCt: 'ct1'}, undefined, EntryType],
-    [{linkedCt: 'ct2'}, {ct1: types.ct1, ct2: types.ct2}, types.ct2],
-    [{linkedCt: 'ct3'}, {ct1: types.ct1, ct2: types.ct2}, EntryType]
+    [{linkedCts: ['ct1']}, undefined, EntryType],
+    [{linkedCts: ['ct2']}, {ct1: types.ct1, ct2: types.ct2}, types.ct2],
+    [{linkedCts: ['ct3']}, {ct1: types.ct1, ct2: types.ct2}, EntryType]
   ];
 
-  tests.forEach(([field, ctIdToType, Type]) => {
+  tests.forEach(([field, ctIdToType, Type], i) => {
     const config = map['Link<Entry>'](field, ctIdToType);
     t.equal(config.type, Type);
   });

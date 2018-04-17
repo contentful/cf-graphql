@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "dataloader": "^1.3.0",
-    "graphql": "^0.11.7",
+    "https-proxy-agent": "^2.1.1",
     "lodash.camelcase": "^4.3.0",
     "lodash.chunk": "^4.2.0",
     "lodash.get": "^4.4.2",
@@ -65,6 +65,7 @@
     "express": "^4.15.4",
     "express-graphql": "^0.6.7",
     "fetch-graphql-schema": "^0.2.1",
+    "graphql": "^0.13.0",
     "graphqlviz": "^2.0.1",
     "istanbul": "^0.4.5",
     "just-extend": "1.1.22",
@@ -73,5 +74,8 @@
     "proxyquire": "^1.8.0",
     "sinon": "^4.0.1",
     "tape": "^4.8.0"
+  },
+  "peerDependencies": {
+    "graphql": "^0.11.7 || ^0.13.0"
   }
 }

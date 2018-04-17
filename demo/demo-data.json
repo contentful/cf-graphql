@@ -82,7 +82,7 @@
         {
           "id": "author",
           "type": "Array<Link<Entry>>",
-          "linkedCt": "1kUEViTN4EmGiEaaeC6ouY"
+          "linkedCts": ["1kUEViTN4EmGiEaaeC6ouY"]
         },
         {
           "id": "body",
@@ -91,7 +91,7 @@
         {
           "id": "category",
           "type": "Array<Link<Entry>>",
-          "linkedCt": "5KMiN6YPvi42icqAUQMCQe"
+          "linkedCts": ["5KMiN6YPvi42icqAUQMCQe"]
         },
         {
           "id": "tags",
