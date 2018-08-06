@@ -1,7 +1,11 @@
 'use strict';
 
 const _get = require('lodash.get');
-const {GraphQLObjectType, GraphQLList} = require('graphql');
+const {
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLList
+} = require('graphql');
 
 module.exports = createBackrefsType;
 
@@ -24,7 +28,7 @@ function prepareBackrefsFields (ct, ctIdToType) {
 
 function createBackrefFieldConfig (backref, Type) {
   return {
-    type: new GraphQLList(Type),
+    type: new GraphQLList(new GraphQLNonNull(Type)),
     resolve: (entryId, _, ctx) => {
       return ctx.entryLoader.queryAll(backref.ctId)
       .then(entries => filterEntries(entries, backref.fieldId, entryId));

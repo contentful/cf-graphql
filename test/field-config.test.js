@@ -3,6 +3,7 @@
 const test = require('tape');
 
 const {
+  GraphQLNonNull,
   GraphQLString,
   GraphQLInt,
   GraphQLFloat,
@@ -26,6 +27,10 @@ const ctx = {
     getMany: ids => Promise.resolve(ids.map(id => entities.entry[id]))
   }
 };
+
+function isNonNullType(type) {
+  return type instanceof GraphQLNonNull;
+}
 
 test('field-config: simple types', function (t) {
   const tests = [
@@ -79,6 +84,7 @@ test('field-config: array of strings', function (t) {
   const config = map['Array<String>']({id: 'test'});
   t.ok(config.type instanceof GraphQLList);
   t.equal(getNamedType(config.type), GraphQLString);
+  t.ok(isNonNullType(config.type.ofType));
   t.equal(config.resolve({fields: {}}), undefined);
 
   [[], ['x'], ['x', 'y'], null, undefined].forEach(val => {
@@ -141,6 +147,7 @@ test('field-config: arrays of links', function (t) {
   [[assetConfig, AssetType], [entryConfig, EntryType]].forEach(([config, Type]) => {
     t.ok(config.type instanceof GraphQLList);
     t.equal(getNamedType(config.type), Type);
+    t.ok(isNonNullType(config.type.ofType));
     t.equal(config.resolve({fields: {}}), undefined);
     t.equal(config.resolve({fields: {test: null}}), undefined);
     t.deepEqual(config.resolve({fields: {test: []}}, null, ctx), []);

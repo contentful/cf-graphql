@@ -3,6 +3,7 @@
 const _get = require('lodash.get');
 
 const {
+  GraphQLNonNull,
   GraphQLString,
   GraphQLInt,
   GraphQLFloat,
@@ -49,7 +50,7 @@ function createObjectFieldConfig (field) {
 }
 
 function createArrayOfStringsFieldConfig (field) {
-  return createFieldConfig(new GraphQLList(GraphQLString), field);
+  return createFieldConfig(new GraphQLList(new GraphQLNonNull(GraphQLString)), field);
 }
 
 function createAssetFieldConfig (field) {
@@ -57,7 +58,7 @@ function createAssetFieldConfig (field) {
 }
 
 function createArrayOfAssetsFieldConfig (field) {
-  return createFieldConfig(new GraphQLList(AssetType), field, (links, ctx) => {
+  return createFieldConfig(new GraphQLList(new GraphQLNonNull(AssetType)), field, (links, ctx) => {
     if (Array.isArray(links)) {
       return links.map(link => getAsset(link, ctx)).filter(isObject);
     }
@@ -81,7 +82,7 @@ function createEntryFieldConfig (field, ctIdToType) {
 }
 
 function createArrayOfEntriesFieldConfig (field, ctIdToType) {
-  const Type = new GraphQLList(typeFor(field, ctIdToType));
+  const Type = new GraphQLList(new GraphQLNonNull(typeFor(field, ctIdToType)));
 
   return createFieldConfig(Type, field, (links, ctx) => {
     if (Array.isArray(links)) {
