@@ -33,7 +33,7 @@ function createRestClient(config) {
   const base = config.host;
   const defaultParams = {};
   const spaceName = config.spaceName || '';
-  defaultParams.include = 1;
+  defaultParams.include = 3;
   if (config.locale) {
     defaultParams.locale = config.locale;
   }
