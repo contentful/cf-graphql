@@ -16,7 +16,7 @@ exports.createRestClient = createRestClient;
 exports.createContentfulClient = createContentfulClient;
 
 function createRestClient (config) {
-  const opts = Object.assign({}, createOptions(config), { spaceName: config.spaceName || '', locale: config.defaultParams.locale || '', });
+  const opts = Object.assign({}, createOptions(config), { spaceName: config.spaceName || '', locale: config.defaultParams.locale || '', include: config.defaultParams.include || '' })
 
   return {
     get: (url, params) => rest(url, params, opts),
@@ -48,8 +48,8 @@ function rest (entryId, params, opts) {
   const { base, spaceName, timeline, cache, locale } = opts;
   const httpCall = { entryId, start: Date.now() };
   timeline.push(httpCall);
-
-  const url = `${base}${params.path}/${spaceName}/${entryId}?${params.queryParams || ''}`;
+  const queryParams = params.queryParams ? `${params.queryParams}&include=${opts.include}` : `include=${opts.include}`;
+  const url = `${base}${params.path}/${spaceName}/${entryId}?${queryParams}`;
   const cached = cache[url];
   if (cached) {
     return cached;
