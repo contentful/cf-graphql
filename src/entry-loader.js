@@ -48,11 +48,15 @@ function createEntryLoader(http, basePageTypes) {
     });
   }
 
+  function getFields(fields) {
+    return fields ? fields.join(',') : ''
+  }
+
   function queryAll(ctId, fields) {
-    return http.get(`contentModel/${ctId}`, { path: 'entry', queryParams: basePageTypes.includes(ctId) ? 'slimEntry=true&fields=' + fields.join(',') : 'slimEntry=false' })
+    return http.get(`contentModel/${ctId}`, { path: 'entry', queryParams: basePageTypes.includes(ctId) ? 'slimEntry=true&fields=' + getFields(fields) : 'slimEntry=false' })
   }
 
   function queryBasePages(ctId, fields) {
-    return entriesByBasePageLoader.load(`slimEntry=true&fields=${fields.join(',')}`);
+    return entriesByBasePageLoader.load(`slimEntry=true&fields=${getFields(fields)}`);
   }
 }
